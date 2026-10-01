@@ -52,7 +52,7 @@ function sanitizeFolderName(name) {
   return (name || 'Sesi_01').replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_') || 'Sesi_01';
 }
 
-const server = http.createServer((req, res) => {
+const requestHandler = (req, res) => {
   const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
   const pathname = parsedUrl.pathname;
   const searchParams = parsedUrl.searchParams;
@@ -69,6 +69,9 @@ const server = http.createServer((req, res) => {
   }
 
   const localIp = getLocalIp();
+  const host = req.headers.host || `${localIp}:${PORT}`;
+  const proto = (req.headers['x-forwarded-proto'] || 'http');
+  const baseUrl = `${proto}://${host}`;
 
   // API 1: Get Server Info
   if (pathname === '/api/info' && req.method === 'GET') {
@@ -76,7 +79,7 @@ const server = http.createServer((req, res) => {
     res.end(JSON.stringify({
       localIp,
       port: PORT,
-      baseUrl: `http://${localIp}:${PORT}`
+      baseUrl
     }));
     return;
   }
@@ -95,7 +98,7 @@ const server = http.createServer((req, res) => {
             name: dir.name,
             displayName: dir.name.replace(/_/g, ' '),
             photoCount: files.length,
-            clientUrl: `http://${localIp}:${PORT}/gallery.html?folder=${encodeURIComponent(dir.name)}`,
+            clientUrl: `${baseUrl}/gallery.html?folder=${encodeURIComponent(dir.name)}`,
             createdAt: stats.birthtimeMs || stats.mtimeMs,
             updatedAt: stats.mtimeMs
           };
@@ -109,7 +112,7 @@ const server = http.createServer((req, res) => {
           name: DEFAULT_FOLDER,
           displayName: 'Sesi 01',
           photoCount: 0,
-          clientUrl: `http://${localIp}:${PORT}/gallery.html?folder=${encodeURIComponent(DEFAULT_FOLDER)}`,
+          clientUrl: `${baseUrl}/gallery.html?folder=${encodeURIComponent(DEFAULT_FOLDER)}`,
           createdAt: Date.now(),
           updatedAt: Date.now()
         }];
@@ -530,26 +533,28 @@ const server = http.createServer((req, res) => {
 
   // Serve Frontend HTML / CSS / JS
   let reqFile = pathname === '/' ? '/index.html' : pathname;
-  const filePath = path.join(__dirname, reqFile);
+  // Prevent directory traversal
+  reqFile = path.normalize(reqFile).replace(/^(\.\.[\/\\])+/, '');
+  
+  let filePath = path.join(process.cwd(), reqFile);
+  if (!fs.existsSync(filePath)) {
+    filePath = path.join(__dirname, reqFile);
+  }
   const ext = path.extname(filePath).toLowerCase();
 
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      if (err.code === 'ENOENT') {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('404 Not Found');
-      } else {
-        res.writeHead(500);
-        res.end(`Server Error: ${err.code}`);
-      }
-    } else {
-      res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
-      res.end(content, 'utf-8');
-    }
-  });
-});
+  if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+    res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
+    fs.createReadStream(filePath).pipe(res);
+    return;
+  }
 
-if (require.main === module || !process.env.VERCEL) {
+  res.writeHead(404, { 'Content-Type': 'text/plain' });
+  res.end('404 Not Found');
+};
+
+const server = http.createServer(requestHandler);
+
+if (require.main === module) {
   server.listen(PORT, '0.0.0.0', () => {
     const localIp = getLocalIp();
     console.log(`\n=============================================================`);
@@ -561,4 +566,4 @@ if (require.main === module || !process.env.VERCEL) {
   });
 }
 
-module.exports = server;
+module.exports = requestHandler;
