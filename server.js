@@ -37,14 +37,18 @@ const MIME_TYPES = {
 };
 
 function getLocalIp() {
-  const interfaces = os.networkInterfaces();
-  for (const name of Object.keys(interfaces)) {
-    for (const net of interfaces[name]) {
-      if (net.family === 'IPv4' && !net.internal) {
-        return net.address;
+  try {
+    const interfaces = os.networkInterfaces();
+    if (!interfaces) return 'localhost';
+    for (const name of Object.keys(interfaces)) {
+      const ifaces = interfaces[name] || [];
+      for (const net of ifaces) {
+        if (net && net.family === 'IPv4' && !net.internal) {
+          return net.address;
+        }
       }
     }
-  }
+  } catch (err) {}
   return 'localhost';
 }
 
@@ -53,9 +57,10 @@ function sanitizeFolderName(name) {
 }
 
 const requestHandler = (req, res) => {
-  const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const pathname = parsedUrl.pathname;
-  const searchParams = parsedUrl.searchParams;
+  try {
+    const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    const pathname = parsedUrl.pathname;
+    const searchParams = parsedUrl.searchParams;
 
   // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -550,11 +555,22 @@ const requestHandler = (req, res) => {
 
   res.writeHead(404, { 'Content-Type': 'text/plain' });
   res.end('404 Not Found');
+  } catch (fatalErr) {
+    console.error("FATAL_REQUEST_ERROR:", fatalErr);
+    if (!res.headersSent) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+    }
+    res.end(JSON.stringify({
+      error: "FATAL_REQUEST_ERROR",
+      message: fatalErr.message,
+      stack: fatalErr.stack
+    }));
+  }
 };
 
-const server = http.createServer(requestHandler);
-
+let server;
 if (require.main === module) {
+  server = http.createServer(requestHandler);
   server.listen(PORT, '0.0.0.0', () => {
     const localIp = getLocalIp();
     console.log(`\n=============================================================`);
