@@ -786,15 +786,6 @@ body {
   margin-bottom: 16px;
 }
 
-@media (max-width: 1024px) {
-  .dashboard-layout {
-    flex-direction: column;
-  }
-  .dashboard-sidebar {
-    width: 100%;
-  }
-}
-
 /* =========================================
    LIVE VIEWFINDER (HDMI / CAPTURE CARD)
    ========================================= */
@@ -1270,4 +1261,474 @@ body {
   font-size: 0.72rem;
   opacity: 0.85;
   font-weight: 600;
+}
+
+/* ==========================================================================
+   MOBILE & TABLET RESPONSIVE DESIGN SYSTEM
+   ========================================================================== */
+
+/* 1. Tablets & Small Laptops (<= 1024px) */
+@media (max-width: 1024px) {
+  .dashboard-layout {
+    flex-direction: column;
+    padding: 16px 20px 30px;
+    gap: 20px;
+  }
+
+  .dashboard-sidebar {
+    width: 100%;
+    order: 1; /* Kamera & Viewfinder di atas agar langsung siap dipakai */
+  }
+
+  .gallery-section {
+    width: 100%;
+    order: 2; /* Aliran foto di bawah Viewfinder */
+  }
+
+  .photographer-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 14px;
+  }
+}
+
+/* 2. Compact Tablets (<= 768px) */
+@media (max-width: 768px) {
+  .top-nav {
+    padding: 10px 16px;
+    gap: 10px;
+  }
+
+  .brand-title {
+    font-size: 1.15rem;
+  }
+
+  .brand-badge {
+    display: none;
+  }
+
+  #gdrive-connection-status {
+    max-width: 150px;
+    font-size: 0.72rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 4px 10px;
+  }
+
+  .folders-bar {
+    padding: 8px 16px;
+  }
+
+  .frame-selector-bar {
+    padding: 8px 16px;
+  }
+
+  .frame-options-group {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+
+  .frame-options-group::-webkit-scrollbar {
+    display: none;
+  }
+
+  .frame-pill-btn {
+    flex-shrink: 0;
+  }
+
+  .photographer-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+}
+
+/* 3. Mobile Phones (<= 640px) */
+@media (max-width: 640px) {
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+    font-size: 14px;
+  }
+
+  /* --- Top Navigation --- */
+  .top-nav {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+
+  .brand {
+    gap: 8px;
+  }
+
+  .brand-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+  }
+
+  .brand-logo svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .brand-title {
+    font-size: 1.05rem;
+    letter-spacing: -0.3px;
+  }
+
+  .nav-actions {
+    gap: 6px;
+  }
+
+  #gdrive-connection-status {
+    display: none; /* Sembunyikan status teks panjang agar tombol header rapi */
+  }
+
+  #btn-open-qr {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    gap: 5px;
+    border-radius: 8px;
+  }
+
+  #btn-open-qr svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  .btn-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
+
+  .btn-icon svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  /* --- Sesi / Folders Bar --- */
+  .folders-bar {
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .folders-scroll-list {
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .folders-scroll-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .folder-tab-item {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .btn-new-folder {
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  /* --- Template Frame Selector Bar (Swipeable Horizontal Carousel) --- */
+  .frame-selector-bar {
+    padding: 6px 10px;
+    gap: 8px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .frame-selector-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .frame-label-title {
+    font-size: 0.72rem;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+
+  .frame-options-group {
+    flex-wrap: nowrap;
+    overflow-x: visible;
+    gap: 6px;
+  }
+
+  .frame-pill-btn {
+    padding: 6px 12px;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-radius: 16px;
+  }
+
+  #btn-open-frame-customizer {
+    padding: 6px 10px !important;
+    font-size: 0.75rem !important;
+    white-space: nowrap;
+    flex-shrink: 0;
+    border-radius: 8px;
+  }
+
+  /* --- OTG Ingestion Sub-Bar --- */
+  .ingest-sub-bar {
+    padding: 8px 10px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .ingest-status-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: 0.75rem;
+    gap: 6px;
+  }
+
+  .status-pill {
+    padding: 3px 8px;
+    font-size: 0.72rem;
+  }
+
+  .ingest-actions-wrap {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px !important;
+    width: 100%;
+  }
+
+  .ingest-sub-bar .btn-action {
+    padding: 8px 6px;
+    font-size: 0.75rem;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border-radius: 8px;
+  }
+
+  #btn-manual-upload {
+    grid-column: span 2; /* Tombol Upload Manual melebar penuh di bawah */
+  }
+
+  /* --- Workspace Layout --- */
+  .dashboard-layout {
+    padding: 10px 10px 30px;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .dashboard-sidebar {
+    gap: 14px;
+  }
+
+  .sidebar-card {
+    padding: 14px;
+    border-radius: 14px;
+    gap: 12px;
+  }
+
+  /* --- Live Viewfinder & Camera Card di HP --- */
+  .unified-viewport {
+    min-height: 180px;
+    max-height: 230px;
+    border-radius: 10px;
+  }
+
+  .unified-controls {
+    gap: 8px;
+  }
+
+  .unified-controls > div {
+    flex-wrap: wrap;
+  }
+
+  .btn-shutter {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+    border-radius: 25px;
+  }
+
+  .shutter-btn-text {
+    font-size: 0.95rem;
+  }
+
+  /* --- Galeri Foto Hasil Jepretan (2 Kolom Rapi ala Instagram) --- */
+  .photographer-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+
+  .dashboard-photo-card {
+    border-radius: 10px;
+    aspect-ratio: 4 / 3;
+  }
+
+  .card-gdrive-badge, .card-frame-badge {
+    font-size: 0.58rem;
+    padding: 2px 5px;
+    top: 5px;
+  }
+
+  .card-gdrive-badge { left: 5px; }
+  .card-frame-badge { right: 5px; }
+
+  .card-overlay-actions {
+    padding: 5px 6px;
+  }
+
+  .card-time {
+    font-size: 0.65rem;
+    max-width: 65px;
+  }
+
+  .card-btn-icon {
+    width: 26px;
+    height: 26px;
+    border-radius: 5px;
+  }
+
+  .card-btn-icon svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  /* --- Section Header --- */
+  .section-header {
+    gap: 8px;
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  #btn-rename-session, #btn-delete-session {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    border-radius: 6px;
+  }
+
+  /* --- Kiosk QR Card --- */
+  .kiosk-qr-widget {
+    padding: 16px 12px;
+  }
+
+  .active-folder-label {
+    font-size: 1.1rem;
+  }
+
+  .qr-box-inner {
+    padding: 10px;
+  }
+
+  #qrcode-container canvas, #qrcode-container img {
+    max-width: 160px !important;
+    height: auto !important;
+  }
+
+  .qr-url-pill {
+    font-size: 0.68rem;
+    word-break: break-all;
+    padding: 5px 10px;
+  }
+
+  /* --- Modals di Layar HP --- */
+  .modal-overlay {
+    padding: 10px;
+  }
+
+  .modal-card {
+    max-width: 100%;
+    border-radius: 14px;
+    max-height: 85vh;
+  }
+
+  .modal-header {
+    padding: 12px 14px;
+  }
+
+  .modal-header h3 {
+    font-size: 1.05rem;
+  }
+
+  .modal-body {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .modal-footer {
+    padding: 12px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .modal-footer button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  #viewer-img {
+    max-height: 52vh;
+  }
+
+  #viewer-modal .modal-footer {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  #viewer-modal .modal-footer > div {
+    width: 100%;
+    display: flex;
+    gap: 6px;
+  }
+
+  #viewer-modal .modal-footer > div button {
+    flex: 1;
+    padding: 8px;
+    font-size: 0.75rem;
+  }
+
+  #viewer-download-link {
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+}
+
+/* 4. Layar HP Sangat Kecil (<= 380px) */
+@media (max-width: 380px) {
+  .photographer-grid {
+    gap: 6px !important;
+  }
+
+  .brand-title {
+    font-size: 0.95rem;
+  }
+
+  .btn-qr-label {
+    display: none; /* Hanya tampilkan ikon QR di layar 320px-360px */
+  }
+
+  #btn-open-qr {
+    padding: 6px 8px;
+  }
 }
