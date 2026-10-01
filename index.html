@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>BerkisahKita</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- QR Code Generator Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <!-- Top Bar Navigation -->
+    <header class="top-nav">
+      <div class="brand">
+        <div class="brand-logo">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="brand-title">BerkisahKita</div>
+          <span class="brand-badge">Wedding Moment</span>
+        </div>
+      </div>
+
+      <div class="nav-actions">
+        <span id="gdrive-connection-status" class="status-pill">
+          ● Memeriksa Google Drive...
+        </span>
+
+        <button id="btn-open-qr" class="btn-action highlight" title="Tampilkan QR Code untuk Klien">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <rect x="3" y="3" width="7" height="7"></rect>
+            <rect x="14" y="3" width="7" height="7"></rect>
+            <rect x="3" y="14" width="7" height="7"></rect>
+            <rect x="14" y="14" width="7" height="7"></rect>
+          </svg>
+          QR Code Sesi Ini
+        </button>
+
+        <button id="btn-fullscreen" class="btn-icon" title="Layar Penuh">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+            </path>
+          </svg>
+        </button>
+
+        <button id="btn-open-settings" class="btn-icon" title="Pengaturan Webhook Google Drive">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Folder / Session Switcher Strip -->
+    <nav class="folders-bar">
+      <div class="folders-scroll-list" id="folders-scroll-list">
+        <!-- Folders injected via app.js -->
+      </div>
+
+      <button id="btn-create-folder" class="btn-new-folder" title="Buat Folder / Sesi Klien Baru">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        + Sesi Drive Baru
+      </button>
+    </nav>
+
+    <!-- Real-time Frame Template Selection Bar -->
+    <div class="frame-selector-bar">
+      <div class="frame-label-title">
+        <span>🎨 Template Bingkai Aktif:</span>
+      </div>
+
+      <div class="frame-options-group">
+        <button class="frame-pill-btn active" data-frame="romantic_blossom">
+          🌸 Romantis Blossom
+        </button>
+        <button class="frame-pill-btn" data-frame="golden_elegance">
+          ✨ Golden Luxury
+        </button>
+        <button class="frame-pill-btn" data-frame="vintage_polaroid">
+          🎞️ Vintage Polaroid
+        </button>
+        <button class="frame-pill-btn" data-frame="custom_png">
+          🖼️ Custom PNG Admin
+        </button>
+        <button class="frame-pill-btn" data-frame="none">
+          🚫 Tanpa Frame (Polos)
+        </button>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="btn-open-frame-customizer" class="btn-action" style="padding: 6px 14px; font-size: 0.8rem;">
+          ✏️ Edit Teks Frame
+        </button>
+      </div>
+    </div>
+
+    <!-- OTG Tether Ingestion Sub-Bar -->
+    <div class="ingest-sub-bar">
+      <div class="ingest-status-info">
+        <div id="otg-tether-status" class="status-pill">
+          <span class="dot-pulse" style="background: #94a3b8;"></span>
+          <span>OTG Tethering: Siap</span>
+        </div>
+        <span style="font-size: 0.8rem; color: var(--text-muted)">
+          Sesi Aktif: <strong id="otg-target-folder-badge" style="color: #ff85a1;">Sesi 01</strong>
+        </span>
+        <span id="upload-activity-status" style="font-size: 0.8rem; color: #93c5fd; font-weight: 600;"></span>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <button id="btn-toggle-camera-main" class="btn-action highlight-cam"
+          title="Nyalakan / Matikan Kamera di Live Preview Utama">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M23 7l-7 5 7 5V7z"></path>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
+          <span id="btn-toggle-camera-text">Kamera (Live)</span>
+        </button>
+
+        <button id="btn-pick-folder" class="btn-action highlight"
+          title="Pilih folder kamera SLR yang terhubung via OTG">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+          </svg>
+          Pantau Folder Kamera OTG
+        </button>
+
+        <button id="btn-manual-upload" class="btn-action" title="Pilih foto langsung dari tablet/laptop">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          Upload Manual
+        </button>
+        <input type="file" id="manual-file-input" multiple accept="image/*" style="display: none;">
+      </div>
+    </div>
+
+    <!-- Main Workspace Layout -->
+    <div class="dashboard-layout">
+      <!-- Left: Realtime Upload Stream -->
+      <section class="gallery-section">
+        <div class="section-header">
+          <div class="section-title">
+            <span id="current-session-title">Sesi 01</span>
+            <span id="gallery-photo-count" class="photo-counter-tag">0 Foto</span>
+
+            <!-- Tombol Rename Sesi -->
+            <button id="btn-rename-session" class="btn-action"
+              style="padding: 5px 12px; font-size: 0.78rem; display: flex; align-items: center; gap: 6px; border-color: rgba(96, 165, 250, 0.4); color: #93c5fd;"
+              title="Ubah nama sesi ini">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              Rename Sesi
+            </button>
+
+            <!-- Tombol Hapus Sesi yang Jelas & Aktif -->
+            <button id="btn-delete-session" class="btn-danger" title="Hapus sesi ini dan semua fotonya">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Hapus Sesi Ini
+            </button>
+          </div>
+          <div style="font-size: 0.8rem; color: #34d399; font-weight: 600;">
+
+          </div>
+        </div>
+
+        <div id="photographer-grid" class="photographer-grid"></div>
+
+        <div id="empty-gallery-state" class="empty-state"
+          style="text-align: center; padding: 60px 20px; color: var(--text-muted);">
+          <div style="font-size: 3rem; margin-bottom: 12px;">🌸</div>
+          <h3 style="font-family: var(--font-display); font-size: 1.3rem; color: var(--text-main);">Menunggu Jepretan
+            Kamera SLR</h3>
+          <p style="max-width: 480px; margin: 8px auto 20px; font-size: 0.85rem; line-height: 1.6;">
+            Setiap jepretan kamera SLR akan <strong>otomatis dibingkai dengan template pilihan</strong> dan langsung
+            terunggah ke Google Drive pada folder sesi ini!
+          </p>
+        </div>
+      </section>
+
+      <!-- Right Sidebar: Live Frame Preview & QR Code Card -->
+      <aside class="dashboard-sidebar">
+        <!-- Unified Live Camera & Frame Preview Card on Main Page -->
+        <div class="sidebar-card unified-live-card" id="unified-live-card">
+          <div class="sidebar-card-title" style="justify-content: space-between; align-items: center;">
+            <span style="display: flex; align-items: center; gap: 8px;">
+              <span class="live-dot-pulse" id="main-live-indicator"></span>
+              <strong style="font-size: 0.92rem;">Live Preview Kamera & Bingkai</strong>
+            </span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span id="badge-active-frame-name"
+                style="font-size: 0.72rem; color: #ff85a1; background: rgba(255,107,149,0.15); padding: 2px 8px; border-radius: 12px; font-weight: 700;">
+                Romantis Blossom
+              </span>
+              <button id="btn-toggle-fullscreen-viewfinder" class="btn-icon" style="width: 28px; height: 28px;"
+                title="Mode Layar Penuh (Kiosk Photobooth)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3">
+                  </path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Unified Viewport: Live Camera Video with Real-time Frame Overlay -->
+          <div class="unified-viewport" id="unified-viewport">
+            <div id="shutter-flash" class="shutter-flash-overlay"></div>
+            <div id="viewfinder-countdown-overlay" class="countdown-overlay">
+              <span id="countdown-number">3</span>
+            </div>
+
+            <!-- Video element (stream source) -->
+            <video id="viewfinder-video" autoplay playsinline muted style="display: none;"></video>
+
+            <!-- Realtime Frame Overlay & Video Canvas -->
+            <canvas id="live-frame-preview-canvas"></canvas>
+
+            <!-- Guidance HUD -->
+            <div class="unified-hud">
+              <span id="hud-status-badge" class="hud-tag hud-green">⚡ Auto-Shutter: AKTIF</span>
+              <span id="viewfinder-res-badge" class="viewfinder-pill" style="display: none;">1080p FHD</span>
+            </div>
+
+            <!-- Prompt if camera is not active -->
+            <div id="camera-inactive-banner" class="camera-inactive-banner">
+              <button id="btn-start-camera-main" class="btn-action highlight-cam"
+                style="font-size: 0.8rem; padding: 8px 16px;">
+                Sambungkan Kamera
+              </button>
+            </div>
+          </div>
+
+          <!-- Controls directly on the card -->
+          <div class="unified-controls">
+            <div style="display: flex; gap: 8px; width: 100%;">
+              <select id="viewfinder-device-select" class="custom-select"
+                style="flex: 1; padding: 6px 10px; font-size: 0.78rem;">
+                <option value="">Memuat kamera / capture card...</option>
+              </select>
+              <select id="viewfinder-countdown-select" class="custom-select"
+                style="width: 95px; padding: 6px 8px; font-size: 0.78rem;">
+                <option value="0" selected>⚡ 0s</option>
+                <option value="3">⏳ 3s</option>
+                <option value="5">⏳ 5s</option>
+              </select>
+            </div>
+
+            <div
+              style="display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 0.75rem;">
+              <label class="toggle-chip" style="padding: 4px 10px; font-size: 0.72rem;"
+                title="Otomatis tangkap ketika menekan tombol fisik kamera">
+                <input type="checkbox" id="check-auto-shutter-detect" checked>
+                <span>⚡ Auto-Shutter Kamera</span>
+              </label>
+              <label class="toggle-chip" style="padding: 4px 10px; font-size: 0.72rem;"
+                title="Balik tampilan horizontal seperti cermin">
+                <input type="checkbox" id="check-mirror-cam">
+                <span>🪞 Mirror</span>
+              </label>
+            </div>
+
+            <!-- Shutter Trigger Mode Selector (Full Shutter Only vs Tolerant) -->
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 0.72rem; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.07); gap: 6px;">
+              <span style="color: var(--text-muted); font-weight: 500; white-space: nowrap;">Mode Deteksi:</span>
+              <select id="shutter-sensitivity-select" class="custom-select"
+                style="padding: 3px 6px; font-size: 0.72rem; flex: 1; border-color: rgba(255,107,149,0.3);">
+                <option value="full_strict" selected>🎯 Full Shutter Saja (Anti AF Half-Press)</option>
+                <option value="balanced">⚖️ Seimbang (Normal)</option>
+                <option value="sensitive">⚡ Sensitif (Studio Redup)</option>
+              </select>
+            </div>
+
+            <!-- Crop & Fit Mode to completely eliminate black OSD/HDMI bars -->
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 0.72rem; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.07); gap: 6px;">
+              <span style="color: var(--text-muted); font-weight: 500; white-space: nowrap;">Pas Bingkai:</span>
+              <select id="camera-crop-mode-select" class="custom-select"
+                style="padding: 3px 6px; font-size: 0.72rem; flex: 1; border-color: rgba(52, 211, 153, 0.4);">
+                <option value="clean_crop" selected>✂️ Bersih (Potong Bar Hitam & Info)</option>
+                <option value="fill_cover">🖼️ Penuh / Pas Frame (Cover)</option>
+                <option value="original">📐 16:9 Asli (Tanpa Crop)</option>
+              </select>
+            </div>
+
+            <!-- Camera Rotation / Orientation Mode -->
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 0.72rem; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.07); gap: 6px;">
+              <span style="color: var(--text-muted); font-weight: 500; white-space: nowrap;">📐 Rotasi Kamera:</span>
+              <select id="camera-rotation-select" class="custom-select"
+                style="padding: 3px 6px; font-size: 0.72rem; flex: 1; border-color: rgba(245, 158, 11, 0.4);">
+                <option value="0" selected>0° (Mendatar / Landscape)</option>
+                <option value="90">🔄 90° CW (Tegak / Portrait)</option>
+                <option value="270">🔄 270° CCW (Tegak Kiri)</option>
+                <option value="180">🔄 180° (Terbalik / Inverted)</option>
+              </select>
+            </div>
+
+            <!-- Shutter Save Delay (Jeda Simpan Setelah Shutter Dipencet) -->
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; width: 100%; font-size: 0.72rem; background: rgba(255,255,255,0.03); padding: 5px 8px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.07); gap: 6px;">
+              <span style="color: var(--text-muted); font-weight: 500; white-space: nowrap;">⏱️ Jeda Simpan
+                Shutter:</span>
+              <select id="shutter-delay-select" class="custom-select"
+                style="padding: 3px 6px; font-size: 0.72rem; flex: 1; border-color: rgba(96, 165, 250, 0.4);">
+                <option value="1000" selected>⏱️ 1 Detik (Stabil &amp; Tajam - Rekomendasi)</option>
+                <option value="500">⏱️ 0.5 Detik (Cepat)</option>
+                <option value="1500">⏱️ 1.5 Detik (Leluasa)</option>
+                <option value="2000">⏱️ 2 Detik (Review Panjang)</option>
+                <option value="0">⚡ 0 Detik (Tanpa Jeda)</option>
+              </select>
+            </div>
+
+            <button id="btn-snap-photo" class="btn-shutter"
+              style="width: 100%; justify-content: center; padding: 10px 16px;">
+              <span class="shutter-btn-circle"></span>
+              <span class="shutter-btn-text" style="font-size: 0.95rem;">📸 JEPRET FOTO</span>
+              <span class="shutter-btn-sub">[Spasi]</span>
+            </button>
+
+            <div
+              style="font-size: 0.72rem; color: var(--text-muted); text-align: center; margin-top: -3px; line-height: 1.35;">
+              💡 Tekan <strong>Full Shutter kamera</strong> atau tombol Jepret. Foto otomatis disimpan <strong>1
+                detik</strong> setelah shutter dipencet agar bebas getaran &amp; hasil tajam.
+            </div>
+          </div>
+
+          <div
+            style="font-size: 0.76rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-glass); padding-top: 8px;">
+            <span id="preview-text-info">"Together Forever"</span>
+            <button id="btn-reframe-all-photos" class="btn-action"
+              style="padding: 3px 8px; font-size: 0.72rem; border-color: rgba(255,107,149,0.5); color: #ff85a1;">
+              🔄 Terapkan ke Foto Sesi Ini
+            </button>
+          </div>
+        </div>
+
+        <!-- Dedicated Google Drive QR Code Card -->
+        <div class="sidebar-card kiosk-qr-widget">
+          <div class="sidebar-card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+            </svg>
+            <span id="qr-widget-title">QR Code Scan Tamu</span>
+          </div>
+
+          <!-- Target Selector: QR Tetap (Semua Sesi) vs Sesi Ini vs Google Drive -->
+          <div
+            style="display: flex; background: rgba(255,255,255,0.06); padding: 3px; border-radius: 8px; gap: 4px; margin-bottom: 8px;">
+            <button type="button" id="tab-qr-all"
+              style="flex: 1.2; padding: 6px 4px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; background: var(--accent); color: white;"
+              title="QR code TETAP & PERMANEN. Tidak akan pernah berubah meski berganti sesi. Tamu bisa memilih sesi sendiri.">
+              🌐 Semua Sesi (QR Tetap)
+            </button>
+            <button type="button" id="tab-qr-gallery"
+              style="flex: 1; padding: 6px 4px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-muted);"
+              title="QR code khusus untuk sesi aktif saat ini saja.">
+              📁 Sesi Ini Saja
+            </button>
+            <button type="button" id="tab-qr-gdrive"
+              style="flex: 0.8; padding: 6px 4px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; border: none; cursor: pointer; transition: all 0.2s; background: transparent; color: var(--text-muted);"
+              title="Link langsung ke folder Google Drive.">
+              ☁️ Drive
+            </button>
+          </div>
+
+          <div class="active-folder-label" id="sidebar-active-folder-name">🌐 Semua Sesi (Pilihan Tamu)</div>
+
+          <div class="qr-box-inner">
+            <div id="kiosk-qrcode-container"></div>
+          </div>
+
+          <p id="qr-desc-text" style="font-size: 0.8rem; color: var(--text-main); margin-top: 4px; line-height: 1.4;">
+            ⭐ <strong>QR Code Statis / Tetap!</strong> Gambar QR Code ini <strong>tidak akan pernah berubah</strong> meskipun Anda mengganti atau membuat sesi baru. Tamu yang menscan akan langsung melihat daftar sesi dan bebas memilih sesi mana yang ingin dilihat atau diunduh.
+          </p>
+          <div id="qr-client-url" class="qr-url-pill">Memuat URL...</div>
+
+          <a id="btn-open-gdrive-folder" href="#" target="_blank" class="btn-gdrive-primary">
+            <span id="btn-open-gdrive-label">📱 Buka Galeri Klien di Tab Baru ↗</span>
+          </a>
+
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <button id="btn-copy-link" class="btn-action" style="flex: 1; justify-content: center;">
+              📋 Salin Link
+            </button>
+            <button id="btn-open-standee" class="btn-action" style="flex: 1; justify-content: center;">
+              🖨️ Cetak Standee
+            </button>
+          </div>
+          <button id="btn-edit-session-drive-link" class="btn-action"
+            style="width: 100%; margin-top: 6px; justify-content: center; font-size: 0.78rem; border-color: rgba(66, 133, 244, 0.4); color: #93c5fd;">
+            ✏️ Atur Tujuan Link Folder Drive Sesi Ini
+          </button>
+        </div>
+
+        <!-- Session Statistics -->
+        <div class="sidebar-card">
+          <div class="sidebar-card-title">📊 Info Sesi Ini</div>
+          <div class="stats-grid">
+            <div class="stat-item">
+              <div id="stat-total-photos" class="stat-val">0</div>
+              <div class="stat-lbl">Foto di Google Drive</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-val" style="color: #34d399;">Auto-Frame</div>
+              <div class="stat-lbl">Status Template</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- MODAL: RENAME SESI CONFIRMATION -->
+    <div id="modal-rename-session" class="modal-overlay">
+      <div class="modal-card" style="max-width: 440px;">
+        <div class="modal-header">
+          <h3>✏️ Ubah Nama Sesi</h3>
+          <button id="btn-close-rename-modal" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 20px 24px; gap: 14px;">
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.5;">
+            Ubah nama untuk sesi saat ini (<strong id="rename-old-name-display" style="color: #ff85a1;">Sesi
+              01</strong>). Foto di dalamnya akan tetap utuh dan QR Code akan otomatis diperbarui.
+          </p>
+          <div class="form-group" style="margin-top: 6px;">
+            <label for="input-new-session-name"
+              style="font-size: 0.8rem; font-weight: 600; color: var(--text-main); margin-bottom: 6px; display: block;">Nama
+              Baru Sesi:</label>
+            <input type="text" id="input-new-session-name" class="custom-input"
+              placeholder="cth: Wedding Sarah Dimas atau Sesi 01"
+              style="width: 100%; padding: 10px 12px; font-size: 0.9rem; border-radius: 8px;">
+          </div>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end; gap: 10px;">
+          <button id="btn-cancel-rename" class="btn-action">Batal</button>
+          <button id="btn-confirm-rename-action" class="btn-primary" style="background: var(--grad-primary);">
+            ✓ Simpan Nama Baru
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: HAPUS SESI CONFIRMATION -->
+    <div id="modal-delete-session-confirm" class="modal-overlay">
+      <div class="modal-card" style="max-width: 440px; text-align: center;">
+        <div class="modal-header">
+          <h3 style="color: #ef4444;">⚠️ Konfirmasi Hapus Sesi</h3>
+          <button id="btn-close-delete-modal" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 24px;">
+          <div style="font-size: 3rem; margin-bottom: 8px;">🗑️</div>
+          <h4 id="delete-session-name-display"
+            style="font-size: 1.2rem; font-family: var(--font-display); margin-bottom: 8px;">Sesi 01</h4>
+          <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5;">
+            Apakah Anda yakin ingin menghapus sesi ini beserta <strong>seluruh foto di dalamnya</strong> dari perangkat
+            ini?
+          </p>
+        </div>
+        <div class="modal-footer" style="justify-content: center; gap: 12px;">
+          <button id="btn-cancel-delete" class="btn-action" style="padding: 10px 20px;">
+            Batal
+          </button>
+          <button id="btn-confirm-delete-action" class="btn-danger"
+            style="padding: 10px 24px; font-size: 0.9rem; font-weight: 700;">
+            Ya, Hapus Sekarang
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: HAPUS FOTO INDIVIDUAL CONFIRMATION -->
+    <div id="modal-delete-photo-confirm" class="modal-overlay">
+      <div class="modal-card" style="max-width: 400px; text-align: center;">
+        <div class="modal-header">
+          <h3 style="color: #ef4444;">Hapus Foto?</h3>
+          <button id="btn-close-delete-photo-modal" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            Yakin ingin menghapus foto <strong id="delete-photo-name-display"
+              style="color: white;">DSC_0001.JPG</strong>?
+          </p>
+        </div>
+        <div class="modal-footer" style="justify-content: center; gap: 12px;">
+          <button id="btn-cancel-delete-photo" class="btn-action">Batal</button>
+          <button id="btn-confirm-delete-photo-action" class="btn-danger" style="padding: 10px 20px;">Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: UPLOAD CUSTOM PNG FRAME -->
+    <div id="modal-custom-frame" class="modal-overlay">
+      <div class="modal-card" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3>🖼️ Upload Template PNG Kustom</h3>
+          <button id="btn-close-custom-frame-modal" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body">
+          <p style="font-size: 0.85rem; color: var(--text-muted);">
+            Upload bingkai PNG transparan buatan Anda (desain dari Canva / Photoshop). Setiap foto dari kamera SLR akan
+            otomatis ditimpa bingkai ini secara presisi pada resolusi tinggi!
+          </p>
+
+          <div class="custom-png-upload-box" id="btn-trigger-png-file">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#ff85a1" stroke-width="2"
+              style="margin-bottom: 8px;">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+              <polyline points="21 15 16 10 5 21"></polyline>
+            </svg>
+            <div style="font-size: 0.95rem; font-weight: 700; color: #ff85a1;">Klik untuk Pilih File PNG Transparan
+            </div>
+            <span class="helper-text">Mendukung format PNG transparan</span>
+            <img id="custom-frame-modal-preview" class="png-preview-thumb" style="display: none;" alt="Preview PNG">
+          </div>
+          <input type="file" id="custom-png-direct-input" accept="image/png,image/webp" style="display: none;">
+        </div>
+        <div class="modal-footer">
+          <button id="btn-save-custom-png-modal" class="btn-primary" style="width: 100%;">
+            Terapkan Template PNG Ini
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: EDIT TEKS FRAME -->
+    <div id="modal-edit-frame-text" class="modal-overlay">
+      <div class="modal-card" style="max-width: 480px;">
+        <div class="modal-header">
+          <h3>✏️ Edit Teks Bingkai Romantis</h3>
+          <button id="btn-close-frame-text-modal" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="input-frame-title-live">Judul / Nama Pasangan</label>
+            <input type="text" id="input-frame-title-live" value="Together Forever" placeholder="cth: Sarah & Dimas">
+          </div>
+          <div class="form-group">
+            <label for="input-frame-subtitle-live">Sub-Judul / Tanggal Acara</label>
+            <input type="text" id="input-frame-subtitle-live" value="Sarah & Dimas • 2026"
+              placeholder="cth: Wedding of Sarah & Dimas • 30 September 2026">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-save-frame-text" class="btn-primary">
+            Simpan & Update Preview
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: QR CODE FULLSCREEN POPUP -->
+    <div id="qr-modal" class="modal-overlay">
+      <div class="modal-card" style="text-align: center;">
+        <div class="modal-header">
+          <h3>QR Code Google Drive Klien</h3>
+          <button id="btn-close-qr" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body" style="align-items: center;">
+          <h2 id="modal-folder-title" style="font-family: var(--font-display); color: #ff85a1;">Sesi 01</h2>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">
+            Tunjukkan QR Code ini kepada klien agar mereka dapat langsung membuka folder Google Drive dan mengunduh foto
+            yang sudah berbingkai estetik:
+          </p>
+          <div class="qr-box-inner" style="padding: 20px; margin: 12px 0;">
+            <div id="modal-qrcode-container"></div>
+          </div>
+          <p style="font-size: 0.85rem; color: #34d399; font-weight: 600;">
+            ⚡ Foto baru otomatis berbingkai & terunggah secara real-time
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: STANDEE CETAK -->
+    <div id="standee-modal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 460px;">
+        <div class="modal-header">
+          <h3>Standee Meja Cetak</h3>
+          <button id="btn-close-standee" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="standee-container">
+            <div id="standee-studio-name"
+              style="font-size: 0.8rem; font-weight: 700; letter-spacing: 2px; color: #ff6b95; text-transform: uppercase;">
+              PIUFOTO STUDIO
+            </div>
+            <h2 id="standee-folder-name" class="standee-title">Galeri Foto Tamu</h2>
+            <p id="standee-folder-desc" class="standee-sub">Scan QR Code dengan kamera HP Anda untuk membuka galeri foto dan bebas memilih sesi foto Anda!</p>
+
+            <div id="standee-qrcode-container" style="display: inline-block; margin: 0 auto 16px;"></div>
+
+            <div style="font-size: 0.85rem; font-weight: 700; color: #ff3366;">
+              🌸 Romantis & Special Moments
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-print-standee" class="btn-primary">
+            🖨️ Cetak Standee Ini
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: FULLSCREEN PHOTO VIEWER -->
+    <div id="viewer-modal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 900px; background: rgba(10, 14, 26, 0.95);">
+        <div class="modal-header">
+          <h3 id="viewer-title">Preview Foto Berbingkai</h3>
+          <button id="btn-close-viewer" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body" style="padding: 10px; align-items: center;">
+          <img id="viewer-img" src="" alt="Preview"
+            style="max-width: 100%; max-height: 72vh; border-radius: 8px; object-fit: contain;">
+        </div>
+        <div class="modal-footer"
+          style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+          <div style="display: flex; gap: 8px;">
+            <button id="btn-delete-viewer-photo" class="btn-danger"
+              style="display: flex; align-items: center; gap: 8px; padding: 10px 18px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              Hapus Foto Ini
+            </button>
+            <button id="btn-rotate-viewer-photo" class="btn-action"
+              style="display: flex; align-items: center; gap: 8px; padding: 10px 16px; border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;"
+              title="Putar foto 90 derajat searah jarum jam">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+              </svg>
+              Putar 90°
+            </button>
+          </div>
+          <a id="viewer-download-link" href="#" download class="btn-primary" style="text-decoration: none;">
+            Download Foto
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: SETTINGS & GOOGLE DRIVE WEBHOOK -->
+    <div id="settings-modal" class="modal-overlay">
+      <div class="modal-card" style="max-width: 520px;">
+        <div class="modal-header">
+          <h3>Pengaturan Google Drive & Webhook</h3>
+          <button id="btn-close-settings" class="btn-icon">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="setting-webhook">URL Webhook Google Apps Script</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="url" id="setting-webhook" placeholder="https://script.google.com/macros/s/.../exec"
+                style="flex: 1;">
+              <button id="btn-test-webhook" type="button" class="btn-action"
+                style="white-space: nowrap; padding: 0 14px; font-size: 0.8rem; border-color: rgba(66, 133, 244, 0.5); color: #93c5fd;">
+                🔌 Test Koneksi
+              </button>
+            </div>
+            <div id="test-webhook-feedback"
+              style="display: none; margin-top: 8px; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; line-height: 1.4;">
+            </div>
+            <span class="helper-text">
+              Salin URL Web App dari deployment script <code>google-drive-script.gs</code>.
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="setting-root-folder">Folder Induk Google Drive (Opsional)</label>
+            <input type="text" id="setting-root-folder" value=""
+              placeholder="Kosongkan untuk simpan langsung per Nama Sesi (cth: Sesi 01)">
+            <span class="helper-text">
+              Biarkan kosong agar foto disimpan <strong>langsung dengan Nama Sesi saja</strong> di Google Drive (tanpa folder induk). Isi hanya jika Anda ingin semua sesi dimasukkan ke dalam folder induk tertentu.
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="setting-parent-folder-id">ID / Link Folder Google Drive Tertentu (Opsional)</label>
+            <input type="text" id="setting-parent-folder-id"
+              placeholder="cth: https://drive.google.com/drive/folders/... atau ID Folder">
+            <span class="helper-text">
+              Kosongkan jika ingin dibuat langsung di Drive Saya. Isi hanya jika ingin memasukkan sesi ke dalam folder Drive yang sudah ada.
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="setting-studio-name">Nama Studio Fotografer</label>
+            <input type="text" id="setting-studio-name" value="BERKISAHKITA">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button id="btn-save-settings" class="btn-primary">
+            Simpan Pengaturan
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Logic -->
+  <script src="app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,12 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+
+# Local photos storage (keep directory, ignore photo contents)
+gallery-photos/*
+!gallery-photos/.gitkeep
+
+# Environment & OS files
+.DS_Store
+Thumbs.db
+*.log

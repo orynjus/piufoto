@@ -1,0 +1,20 @@
+{
+  "name": "piufoto",
+  "version": "2.2.0",
+  "description": "Piufoto - Realtime Google Drive OTG Uploader with Automatic Frame Templates",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "photobooth",
+    "fujifilm",
+    "google-drive",
+    "tethering"
+  ],
+  "author": "BerkisahKita",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

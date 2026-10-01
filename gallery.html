@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="wedding">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Galeri Foto Klien - BerkisahKita</title>
+
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+
+  <style>
+    /* ========================================================
+       1. THEME TOKENS (CSS VARIABLES)
+       ======================================================== */
+    :root,
+    [data-theme="wedding"] {
+      --bg: #140913;
+      --bg-surface: #1e0e1c;
+      --bg-card: rgba(35, 17, 33, 0.78);
+      --border: rgba(255, 107, 149, 0.22);
+      --border-highlight: rgba(255, 182, 193, 0.5);
+      --accent: #ff4d8d;
+      --accent-secondary: #f6c88f;
+      --accent-glow: rgba(255, 77, 141, 0.35);
+      --text-main: #fff0f5;
+      --text-muted: #d4a5b8;
+      --theme-font-title: 'Playfair Display', serif;
+      --theme-badge: '🌸 Wedding Blossom';
+      --grad-primary: linear-gradient(135deg, #ff4d8d 0%, #f6c88f 100%);
+      --grad-bg: radial-gradient(circle at 10% 10%, rgba(255, 77, 141, 0.16) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(246, 200, 143, 0.12) 0%, transparent 50%);
+    }
+
+    [data-theme="gold"] {
+      --bg: #0c0b09;
+      --bg-surface: #181510;
+      --bg-card: rgba(28, 24, 18, 0.82);
+      --border: rgba(212, 175, 55, 0.25);
+      --border-highlight: rgba(243, 229, 171, 0.6);
+      --accent: #d4af37;
+      --accent-secondary: #f3e5ab;
+      --accent-glow: rgba(212, 175, 55, 0.35);
+      --text-main: #fdfbf7;
+      --text-muted: #b8ab96;
+      --theme-font-title: 'Playfair Display', serif;
+      --theme-badge: '✨ Luxury Dark Gold';
+      --grad-primary: linear-gradient(135deg, #d4af37 0%, #aa771c 50%, #f3e5ab 100%);
+      --grad-bg: radial-gradient(circle at 10% 10%, rgba(212, 175, 55, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(170, 119, 28, 0.12) 0%, transparent 50%);
+    }
+
+    [data-theme="vintage"] {
+      --bg: #1a1613;
+      --bg-surface: #241f1a;
+      --bg-card: rgba(38, 32, 26, 0.85);
+      --border: rgba(224, 159, 103, 0.25);
+      --border-highlight: rgba(244, 232, 193, 0.5);
+      --accent: #e09f67;
+      --accent-secondary: #f3d8c7;
+      --accent-glow: rgba(224, 159, 103, 0.35);
+      --text-main: #faf3eb;
+      --text-muted: #bda998;
+      --theme-font-title: 'Outfit', sans-serif;
+      --theme-badge: '🎞️ Vintage Polaroid';
+      --grad-primary: linear-gradient(135deg, #e09f67 0%, #c46d3b 100%);
+      --grad-bg: radial-gradient(circle at 10% 10%, rgba(224, 159, 103, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(196, 109, 59, 0.12) 0%, transparent 50%);
+    }
+
+    [data-theme="modern"] {
+      --bg: #090d16;
+      --bg-surface: #111827;
+      --bg-card: rgba(22, 31, 50, 0.78);
+      --border: rgba(255, 255, 255, 0.12);
+      --border-highlight: rgba(255, 51, 102, 0.6);
+      --accent: #ff3366;
+      --accent-secondary: #7928ca;
+      --accent-glow: rgba(255, 51, 102, 0.35);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --theme-font-title: 'Outfit', sans-serif;
+      --theme-badge: '⚡ Cyber Neon';
+      --grad-primary: linear-gradient(135deg, #ff3366 0%, #7928ca 100%);
+      --grad-bg: radial-gradient(circle at 10% 10%, rgba(121, 40, 202, 0.16) 0%, transparent 50%),
+        radial-gradient(circle at 90% 90%, rgba(255, 51, 102, 0.14) 0%, transparent 50%);
+    }
+
+    /* ========================================================
+       2. RESET & BASE
+       ======================================================== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      background-image: var(--grad-bg);
+      background-attachment: fixed;
+      padding-bottom: 90px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* ========================================================
+       3. STICKY HEADER & BRANDING
+       ======================================================== */
+    .client-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(12, 10, 16, 0.88);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .brand-logo-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--grad-primary);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .brand-logo-icon svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+
+    .brand-info {
+      min-width: 0;
+    }
+
+    .event-title-h1 {
+      font-family: var(--theme-font-title);
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 210px;
+    }
+
+    .studio-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Theme Switcher Button */
+    .theme-picker-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-picker-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+      border-color: var(--border-highlight);
+    }
+
+    .live-status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #34d399;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulse-dot 1.2s infinite;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.35;
+        transform: scale(0.75);
+      }
+    }
+
+    /* ========================================================
+       4. HERO BANNER
+       ======================================================== */
+    .hero-banner {
+      padding: 26px 20px 18px;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 0.74rem;
+      color: var(--accent);
+      margin-bottom: 10px;
+      font-weight: 600;
+      letter-spacing: 0.4px;
+    }
+
+    .hero-title {
+      font-family: var(--theme-font-title);
+      font-size: clamp(1.8rem, 6vw, 2.7rem);
+      font-weight: 800;
+      line-height: 1.18;
+      margin-bottom: 10px;
+      background: var(--grad-primary);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto 18px;
+      line-height: 1.5;
+    }
+
+    /* Quick Action Toolbar */
+    .hero-toolbar {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-hero-action {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-hero-action:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--border-highlight);
+      transform: translateY(-2px);
+    }
+
+    .btn-hero-primary {
+      background: var(--grad-primary);
+      color: white;
+      border: none;
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    .btn-hero-primary:hover {
+      opacity: 0.95;
+      transform: translateY(-2px);
+    }
+
+    /* ========================================================
+       5. FILTER & TAB BAR
+       ======================================================== */
+    .filter-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 20px 14px;
+      max-width: 1200px;
+      margin: 0 auto;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .tab-group {
+      display: flex;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 4px;
+      border-radius: 10px;
+      gap: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 7px 14px;
+      border-radius: 7px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 2px 10px var(--accent-glow);
+    }
+
+    .gallery-counter-info {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ========================================================
+       6. ESTETIK MASONRY GRID (100% TIDAK TERPOTONG / UNCROPPED)
+       ======================================================== */
+    .gallery-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* CSS Multi-Column Masonry: Menjaga rasio asli foto tanpa potongan */
+    .photo-masonry-grid {
+      column-count: 2;
+      column-gap: 14px;
+      width: 100%;
+    }
+
+    @media (min-width: 640px) {
+      .photo-masonry-grid {
+        column-count: 3;
+        column-gap: 18px;
+      }
+    }
+
+    @media (min-width: 1024px) {
+      .photo-masonry-grid {
+        column-count: 4;
+        column-gap: 22px;
+      }
+    }
+
+    .photo-card {
+      break-inside: avoid;
+      margin-bottom: 16px;
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.26s ease, border-color 0.26s ease;
+      display: flex;
+      flex-direction: column;
+      animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+    }
+
+    .photo-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+      border-color: var(--border-highlight);
+    }
+
+    /* GAMBAR TIDAK TERPOTONG (height: auto & object-fit: contain) */
+    .photo-card-img-wrap {
+      position: relative;
+      width: 100%;
+      cursor: pointer;
+      background: #000000;
+      display: block;
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: auto;
+      display: block;
+      object-fit: contain;
+      /* 100% UTUH: Bingkai tidak terpotong sama sekali! */
+      transition: transform 0.35s ease;
+    }
+
+    .photo-card:hover img {
+      transform: scale(1.02);
+    }
+
+    /* Badges */
+    .card-badge-new {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--grad-primary);
+      color: white;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      box-shadow: 0 2px 8px var(--accent-glow);
+      z-index: 5;
+    }
+
+    .card-fav-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(6px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      cursor: pointer;
+      z-index: 5;
+      transition: all 0.2s ease;
+    }
+
+    .card-fav-btn:hover {
+      background: rgba(0, 0, 0, 0.85);
+      transform: scale(1.12);
+    }
+
+    .card-fav-btn.active {
+      color: #ff3366;
+      border-color: #ff3366;
+    }
+
+    /* Card Footer Bar */
+    .photo-card-bar {
+      padding: 10px 12px;
+      background: rgba(10, 8, 14, 0.94);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .photo-meta-text {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 60%;
+    }
+
+    .photo-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-card-download {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      width: 30px;
+      height: 30px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      text-decoration: none;
+    }
+
+    .btn-card-download:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      transform: scale(1.08);
+    }
+
+    /* ========================================================
+       7. LIGHTBOX MODAL (FULLSCREEN HD PREVIEW)
+       ======================================================== */
+    .lightbox-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: rgba(0, 0, 0, 0.94);
+      backdrop-filter: blur(14px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+    }
+
+    .lightbox-modal.active {
+      display: flex;
+    }
+
+    .lightbox-header {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+    }
+
+    .lightbox-title-text {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      font-weight: 500;
+    }
+
+    .btn-close-lightbox {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-close-lightbox:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .lightbox-viewport {
+      flex: 1;
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .lightbox-viewport img {
+      max-width: 100%;
+      max-height: 76vh;
+      object-fit: contain;
+      border-radius: 8px;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9);
+    }
+
+    .lightbox-nav-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .lightbox-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .lightbox-nav-btn.prev {
+      left: 10px;
+    }
+
+    .lightbox-nav-btn.next {
+      right: 10px;
+    }
+
+    .lightbox-footer {
+      width: 100%;
+      max-width: 500px;
+      display: flex;
+      gap: 10px;
+      padding: 12px 0 6px;
+    }
+
+    .btn-download-hd-main {
+      flex: 1;
+      background: var(--grad-primary);
+      color: white;
+      border: none;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 6px 20px var(--accent-glow);
+    }
+
+    .btn-share-photo {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid var(--border);
+      color: white;
+      padding: 13px 18px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    /* ========================================================
+       8. THEME PICKER MODAL
+       ======================================================== */
+    .theme-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 110;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .theme-modal-overlay.active {
+      display: flex;
+    }
+
+    .theme-modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-highlight);
+      border-radius: 18px;
+      max-width: 440px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    }
+
+    .theme-options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 18px 0;
+    }
+
+    .theme-card-option {
+      background: rgba(255, 255, 255, 0.04);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .theme-card-option:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .theme-card-option.active {
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.09);
+      box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .theme-option-icon {
+      font-size: 1.8rem;
+      margin-bottom: 6px;
+    }
+
+    .theme-option-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .theme-option-desc {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    @keyframes popIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    /* ========================================================
+       SESSION NAVIGATION BAR (PILIHAN SESI UNTUK TAMU)
+       ======================================================== */
+    .session-nav-bar {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      position: sticky;
+      top: 61px;
+      z-index: 40;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .session-nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .session-nav-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .session-pills-scroll {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      flex: 1;
+      padding: 2px 0;
+    }
+
+    .session-pills-scroll::-webkit-scrollbar {
+      display: none;
+    }
+
+    .session-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.22s ease;
+      flex-shrink: 0;
+    }
+
+    .session-pill-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+      border-color: var(--border-highlight);
+      transform: translateY(-1px);
+    }
+
+    .session-pill-btn.active {
+      background: var(--grad-primary);
+      color: #ffffff;
+      border-color: transparent;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      font-weight: 700;
+    }
+
+    .session-pill-badge {
+      background: rgba(0, 0, 0, 0.25);
+      padding: 1px 7px;
+      border-radius: 10px;
+      font-size: 0.7rem;
+      font-weight: 700;
+    }
+
+    .session-pill-btn.active .session-pill-badge {
+      background: rgba(255, 255, 255, 0.28);
+      color: #fff;
+    }
+
+    .session-modal-btn {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 7px 12px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .session-modal-btn:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+
+    /* Modal Pilih Sesi Tamu */
+    .session-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 105;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .session-modal-overlay.active {
+      display: flex;
+    }
+
+    .session-modal-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-highlight);
+      border-radius: 18px;
+      width: 100%;
+      max-width: 480px;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+      animation: popIn 0.25s ease-out;
+    }
+
+    .session-modal-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow-y: auto;
+      max-height: 55vh;
+      padding-right: 4px;
+    }
+
+    .session-item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .session-item-row:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: var(--border-highlight);
+      transform: translateX(4px);
+    }
+
+    .session-item-row.active {
+      background: rgba(255, 77, 141, 0.15);
+      border-color: var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Sticky Header -->
+  <header class="client-header">
+    <div class="brand-wrap">
+      <div class="brand-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+          <circle cx="12" cy="13" r="4"></circle>
+        </svg>
+      </div>
+      <div class="brand-info">
+        <h1 id="gallery-folder-title" class="event-title-h1">The Wedding Gallery</h1>
+        <div class="studio-subtitle">
+          <span id="gallery-photographer-name">BerkisahKita</span>
+          <span>•</span>
+          <span id="photo-count-badge">0 Foto</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Session Switcher Button in Header -->
+      <button class="theme-picker-btn session-header-btn" onclick="openSessionModal()" title="Pilih / Ganti Sesi Foto">
+        <span>📁</span>
+        <span id="header-active-session-name" style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Pilih Sesi</span>
+        <span style="font-size: 0.65rem; opacity: 0.7;">▾</span>
+      </button>
+
+      <!-- Theme Switcher -->
+      <button class="theme-picker-btn" onclick="openThemeModal()" title="Pilih Tema Tampilan">
+        <span id="theme-btn-icon">🌸</span>
+        <span id="theme-btn-label">Tema</span>
+      </button>
+
+      <!-- Live Dot Status -->
+      <div class="live-status-pill" title="Terhubung secara realtime ke kamera studio">
+        <span class="live-dot"></span>
+        <span>Live</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Session Navigation Bar (Tamu Bebas Memilih Sesi) -->
+  <nav class="session-nav-bar" id="session-nav-bar">
+    <div class="session-nav-inner">
+      <div class="session-nav-label">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Pilihan Sesi:</span>
+      </div>
+      <div class="session-pills-scroll" id="session-pills-container">
+        <!-- Injected dynamically via JS -->
+      </div>
+      <button class="session-modal-btn" onclick="openSessionModal()" title="Lihat Semua Sesi">
+        <span>Semua Sesi</span>
+        <span id="session-total-badge" class="session-pill-badge">0</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Event Banner -->
+  <section class="hero-banner">
+    <span class="hero-tag" id="hero-theme-badge">🌸 Wedding Blossom</span>
+    <h2 id="banner-folder-name" class="hero-title">Sarah & Dimas</h2>
+    <p class="hero-subtitle" id="banner-subtitle">
+      Selamat menikmati momen bahagia ini! Ketuk foto untuk melihat dan unduh langsung ke ponsel Anda.
+    </p>
+  </section>
+
+
+
+
+
+    <!-- Filter & Tab Bar -->
+    <div class="filter-bar">
+      <div class="tab-group">
+        <button class="tab-btn active" id="tab-all" onclick="setFilterMode('all')">
+          <span>Semua Foto</span>
+          <span id="total-count-tab" style="opacity: 0.8;">(0)</span>
+        </button>
+        <button class="tab-btn" id="tab-fav" onclick="setFilterMode('fav')">
+          <span>❤️ Favorit Saya</span>
+          <span id="fav-count" style="opacity: 0.8;">(0)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Masonry Photo Grid -->
+    <main class="gallery-container">
+      <div id="photo-grid" class="photo-masonry-grid"></div>
+
+      <div id="empty-state" class="empty-state" style="display: none;">
+        <div style="font-size: 3.2rem; margin-bottom: 14px;">📸</div>
+        <h3 style="font-family: var(--theme-font-title); font-size: 1.3rem; margin-bottom: 6px;">Belum Ada Foto di Sesi
+          Ini</h3>
+        <p style="font-size: 0.88rem; max-width: 440px; margin: 0 auto; line-height: 1.6;">
+
+        </p>
+      </div>
+    </main>
+
+    <!-- Fullscreen Lightbox Modal -->
+    <div id="lightbox" class="lightbox-modal">
+      <div class="lightbox-header">
+        <span id="lightbox-filename" class="lightbox-title-text">Foto HD</span>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn-lightbox-rotate" onclick="rotateLightboxPhoto()"
+            style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;"
+            title="Putar Orientasi Foto 90°">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Putar 90°
+          </button>
+          <button class="btn-close-lightbox" onclick="closeLightbox()">✕</button>
+        </div>
+      </div>
+
+      <div class="lightbox-viewport">
+        <button class="lightbox-nav-btn prev" onclick="navigateLightbox(-1)">‹</button>
+        <img id="lightbox-img" src="" alt="Preview Foto HD">
+        <button class="lightbox-nav-btn next" onclick="navigateLightbox(1)">›</button>
+      </div>
+
+      <div class="lightbox-footer">
+        <a id="lightbox-download-link" href="#" download class="btn-download-hd-main">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Unduh Foto HD Asli
+        </a>
+        <button class="btn-share-photo" onclick="shareCurrentPhoto()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          Bagikan
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Pilih Tema -->
+    <div id="modal-theme-picker" class="theme-modal-overlay">
+      <div class="theme-modal-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h3 style="font-family: var(--theme-font-title); font-size: 1.15rem;">Pilih Tema Galeri</h3>
+          <button class="btn-close-lightbox" style="width: 32px; height: 32px;" onclick="closeThemeModal()">✕</button>
+        </div>
+        <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+          Sesuaikan tampilan galeri dengan konsep acara Anda.
+        </p>
+
+        <div class="theme-options-grid">
+          <div class="theme-card-option" data-theme-val="wedding" onclick="selectTheme('wedding')">
+            <div class="theme-option-icon">🌸</div>
+            <div class="theme-option-name">Wedding Blossom</div>
+            <div class="theme-option-desc">Rose Gold &amp; Soft Floral</div>
+          </div>
+
+          <div class="theme-card-option" data-theme-val="gold" onclick="selectTheme('gold')">
+            <div class="theme-option-icon">✨</div>
+            <div class="theme-option-name">Luxury Gold</div>
+            <div class="theme-option-desc">Hitam Pekat &amp; Emas Mewah</div>
+          </div>
+
+          <div class="theme-card-option" data-theme-val="vintage" onclick="selectTheme('vintage')">
+            <div class="theme-option-icon">🎞️</div>
+            <div class="theme-option-name">Vintage Polaroid</div>
+            <div class="theme-option-desc">Retro Sepia &amp; Warm Paper</div>
+          </div>
+
+          <div class="theme-card-option" data-theme-val="modern" onclick="selectTheme('modern')">
+            <div class="theme-option-icon">⚡</div>
+            <div class="theme-option-name">Cyber Neon</div>
+            <div class="theme-option-desc">Dark Minimalist &amp; Neon Violet</div>
+          </div>
+        </div>
+
+        <button class="btn-hero-action btn-hero-primary" style="width: 100%; justify-content: center;"
+          onclick="closeThemeModal()">
+          Terapkan Tema Ini
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal Pilih Sesi Foto Tamu -->
+    <div id="modal-session-picker" class="session-modal-overlay" onclick="handleSessionOverlayClick(event)">
+      <div class="session-modal-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.25rem;">📁</span>
+            <h3 style="font-family: var(--theme-font-title); font-size: 1.15rem; color: var(--text-main);">Pilih Sesi Foto</h3>
+          </div>
+          <button class="btn-close-lightbox" style="width: 32px; height: 32px;" onclick="closeSessionModal()">✕</button>
+        </div>
+        <div style="padding: 16px 20px;">
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
+            Ketuk salah satu sesi di bawah ini untuk melihat dan mengunduh seluruh foto momen spesial Anda:
+          </p>
+          <div id="session-modal-list" class="session-modal-list">
+            <!-- Injected dynamically -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================================
+       9. JAVASCRIPT ENGINE
+       ======================================================== -->
+    <script>
+      // URL Parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      let currentFolder = urlParams.get('folder') || '';
+      let availableFolders = [];
+      let lastFoldersFingerprint = '';
+      const paramTheme = urlParams.get('theme') || localStorage.getItem(`piufoto_theme_${currentFolder || 'default'}`) || 'wedding';
+      const paramTitle = urlParams.get('title') || '';
+      const paramSubtitle = urlParams.get('subtitle') || '';
+
+      let allPhotos = [];
+      let favoriteIds = JSON.parse(localStorage.getItem(`piufoto_fav_${currentFolder}`) || '[]');
+      let currentFilter = 'all';
+      let lastFetchedCount = 0;
+      let lastRenderedFingerprint = '';
+      let currentLightboxIdx = 0;
+
+      // Session Modal Handlers
+      function openSessionModal() {
+        const modal = document.getElementById('modal-session-picker');
+        if (modal) modal.classList.add('active');
+      }
+
+      function closeSessionModal() {
+        const modal = document.getElementById('modal-session-picker');
+        if (modal) modal.classList.remove('active');
+      }
+
+      function handleSessionOverlayClick(e) {
+        if (e.target && e.target.id === 'modal-session-picker') {
+          closeSessionModal();
+        }
+      }
+
+      // Fetch All Available Sessions from Backend
+      async function fetchFoldersList() {
+        try {
+          const res = await fetch('/api/folders');
+          const data = await res.json();
+          if (data && data.folders && data.folders.length > 0) {
+            availableFolders = data.folders;
+            
+            const fp = availableFolders.map(f => `${f.name}:${f.photoCount}:${f.updatedAt}`).join('|') + `__curr:${currentFolder}`;
+            const shouldRender = fp !== lastFoldersFingerprint;
+            lastFoldersFingerprint = fp;
+
+            // Auto-select folder if none was specified in URL or if currentFolder is not in list
+            if (!currentFolder || !availableFolders.some(f => f.name === currentFolder)) {
+              const folderWithPhotos = availableFolders.find(f => f.photoCount > 0);
+              currentFolder = folderWithPhotos ? folderWithPhotos.name : availableFolders[0].name;
+
+              const newUrl = new URL(window.location.href);
+              newUrl.searchParams.set('folder', currentFolder);
+              window.history.replaceState(null, '', newUrl.toString());
+
+              favoriteIds = JSON.parse(localStorage.getItem(`piufoto_fav_${currentFolder}`) || '[]');
+              updateFavCount();
+              initPageMeta();
+              fetchPhotos();
+            }
+
+            if (shouldRender) {
+              renderSessionNavigation();
+            }
+          }
+        } catch (err) {
+          console.warn("Gagal mengambil daftar sesi:", err);
+        }
+      }
+
+      function renderSessionNavigation() {
+        const container = document.getElementById('session-pills-container');
+        const modalList = document.getElementById('session-modal-list');
+        const headerSession = document.getElementById('header-active-session-name');
+        const totalBadge = document.getElementById('session-total-badge');
+
+        if (totalBadge) totalBadge.innerText = availableFolders.length;
+
+        const activeObj = availableFolders.find(f => f.name === currentFolder);
+        const activeDisplayName = activeObj ? activeObj.displayName : (currentFolder ? currentFolder.replace(/_/g, ' ') : 'Pilih Sesi');
+
+        if (headerSession) {
+          headerSession.innerText = activeDisplayName;
+        }
+
+        // Render horizontal scrollable pills
+        if (container) {
+          container.innerHTML = availableFolders.map(folder => {
+            const isActive = folder.name === currentFolder;
+            return `
+              <button class="session-pill-btn ${isActive ? 'active' : ''}" 
+                      onclick="selectSession('${escapeJs(folder.name)}')">
+                <span>📁 ${escapeHtml(folder.displayName)}</span>
+                <span class="session-pill-badge">${folder.photoCount}</span>
+              </button>
+            `;
+          }).join('');
+        }
+
+        // Render modal list
+        if (modalList) {
+          modalList.innerHTML = availableFolders.map(folder => {
+            const isActive = folder.name === currentFolder;
+            return `
+              <div class="session-item-row ${isActive ? 'active' : ''}" onclick="selectSession('${escapeJs(folder.name)}')">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-size: 1.25rem;">📁</span>
+                  <div>
+                    <div style="font-weight: 700; font-size: 0.9rem; color: var(--text-main);">
+                      ${escapeHtml(folder.displayName)}
+                    </div>
+                    <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">
+                      ${folder.photoCount} Foto HD siap diunduh
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  ${isActive ? '<span style="font-size: 0.72rem; color: var(--accent); font-weight: 700; background: rgba(255,255,255,0.1); padding: 3px 8px; border-radius: 10px;">Aktif ✓</span>' : '<span style="font-size: 0.74rem; color: var(--text-muted);">Buka ➔</span>'}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      async function selectSession(folderName) {
+        if (!folderName) return;
+        closeSessionModal();
+
+        if (folderName === currentFolder) return;
+
+        currentFolder = folderName;
+        
+        // Update URL search parameter
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('folder', currentFolder);
+        window.history.replaceState(null, '', newUrl.toString());
+
+        // Update active folder title in page
+        const activeObj = availableFolders.find(f => f.name === currentFolder);
+        const displayName = activeObj ? activeObj.displayName : currentFolder.replace(/_/g, ' ');
+        document.getElementById('gallery-folder-title').innerText = displayName;
+        document.getElementById('banner-folder-name').innerText = displayName;
+
+        // Reset photos & load favorites for this folder
+        favoriteIds = JSON.parse(localStorage.getItem(`piufoto_fav_${currentFolder}`) || '[]');
+        updateFavCount();
+
+        allPhotos = [];
+        lastFetchedCount = 0;
+        lastRenderedFingerprint = '';
+        const grid = document.getElementById('photo-grid');
+        if (grid) grid.innerHTML = '';
+        
+        // Check if cached Drive URL exists for this folder
+        const cachedDrive = localStorage.getItem(`gdrive_url_${currentFolder}`);
+        const driveBtn = document.getElementById('btn-external-gdrive');
+        if (driveBtn) {
+          if (cachedDrive) {
+            driveBtn.href = cachedDrive;
+            driveBtn.style.display = 'inline-flex';
+          } else {
+            driveBtn.style.display = 'none';
+          }
+        }
+
+        renderSessionNavigation();
+        await fetchPhotos();
+      }
+
+      // Apply Theme
+      function applyTheme(themeName) {
+        document.documentElement.setAttribute('data-theme', themeName);
+        if (currentFolder) {
+          localStorage.setItem(`piufoto_theme_${currentFolder}`, themeName);
+        }
+
+        const themeBadges = {
+          wedding: '🌸 Wedding Blossom',
+          gold: '✨ Luxury Dark Gold',
+          vintage: '🎞️ Vintage Polaroid',
+          modern: '⚡ Cyber Neon'
+        };
+        const themeIcons = {
+          wedding: '🌸',
+          gold: '✨',
+          vintage: '🎞️',
+          modern: '⚡'
+        };
+
+        const badgeEl = document.getElementById('hero-theme-badge');
+        if (badgeEl) badgeEl.innerText = themeBadges[themeName] || '🌸 Wedding Blossom';
+
+        const iconEl = document.getElementById('theme-btn-icon');
+        if (iconEl) iconEl.innerText = themeIcons[themeName] || '🌸';
+
+        // Update active states in theme modal
+        document.querySelectorAll('.theme-card-option').forEach(el => {
+          el.classList.toggle('active', el.dataset.themeVal === themeName);
+        });
+      }
+
+      function openThemeModal() {
+        document.getElementById('modal-theme-picker').classList.add('active');
+      }
+
+      function closeThemeModal() {
+        document.getElementById('modal-theme-picker').classList.remove('active');
+      }
+
+      function selectTheme(themeName) {
+        applyTheme(themeName);
+        closeThemeModal();
+      }
+
+      function initPageMeta() {
+        applyTheme(paramTheme);
+
+        const folderClean = currentFolder ? currentFolder.replace(/_/g, ' ') : 'Galeri Foto';
+        const title = paramTitle || folderClean;
+        document.getElementById('gallery-folder-title').innerText = title;
+        document.getElementById('banner-folder-name').innerText = title;
+
+        if (paramSubtitle) {
+          document.getElementById('banner-subtitle').innerText = paramSubtitle;
+        }
+
+        // Check if Google Drive link cached
+        if (currentFolder) {
+          const cachedDrive = localStorage.getItem(`gdrive_url_${currentFolder}`);
+          if (cachedDrive) {
+            const driveBtn = document.getElementById('btn-external-gdrive');
+            if (driveBtn) {
+              driveBtn.href = cachedDrive;
+              driveBtn.style.display = 'inline-flex';
+            }
+          }
+        }
+
+        updateFavCount();
+      }
+
+      async function fetchPhotos() {
+        try {
+          const res = await fetch(`/api/photos?folder=${encodeURIComponent(currentFolder)}`);
+          const data = await res.json();
+          if (data.photos) {
+            const isNewAdded = data.photos.length > lastFetchedCount && lastFetchedCount > 0;
+            allPhotos = data.photos;
+            lastFetchedCount = allPhotos.length;
+
+            document.getElementById('photo-count-badge').innerText = `${allPhotos.length} Foto`;
+            document.getElementById('total-count-tab').innerText = `(${allPhotos.length})`;
+
+            if (!paramTitle && data.displayName) {
+              document.getElementById('gallery-folder-title').innerText = data.displayName;
+              document.getElementById('banner-folder-name').innerText = data.displayName;
+            }
+
+            const currentFingerprint = allPhotos.map(p => `${p.id || p.name}_${p.timestamp || ''}`).join('|') + `__fav:${favoriteIds.join(',')}_filter:${currentFilter}`;
+            if (currentFingerprint === lastRenderedFingerprint) {
+              return; // Anti-Flicker: tidak ada perubahan data
+            }
+            lastRenderedFingerprint = currentFingerprint;
+
+            renderPhotos();
+
+            // Haptic feedback on mobile if new photos arrived
+            if (isNewAdded && navigator.vibrate) {
+              try { navigator.vibrate(60); } catch (e) { }
+            }
+          }
+        } catch (err) {
+          console.warn("Gagal mengambil foto galeri:", err);
+        }
+      }
+
+      function renderPhotos() {
+        const grid = document.getElementById('photo-grid');
+        const emptyState = document.getElementById('empty-state');
+
+        let filtered = allPhotos;
+        if (currentFilter === 'fav') {
+          filtered = allPhotos.filter(p => favoriteIds.includes(p.id || p.name));
+        }
+
+        if (filtered.length === 0) {
+          grid.innerHTML = '';
+          emptyState.style.display = 'block';
+          return;
+        }
+
+        emptyState.style.display = 'none';
+
+        // Smart Keyed DOM Diffing
+        const existingCards = new Map();
+        grid.querySelectorAll('.photo-card').forEach(el => {
+          if (el.dataset.photoId) {
+            existingCards.set(el.dataset.photoId, el);
+          }
+        });
+
+        const currentFilteredIds = new Set(filtered.map(p => p.id || p.name));
+
+        existingCards.forEach((cardEl, id) => {
+          if (!currentFilteredIds.has(id)) {
+            cardEl.remove();
+          }
+        });
+
+        filtered.forEach((photo, idx) => {
+          const photoId = photo.id || photo.name;
+          const isFav = favoriteIds.includes(photoId);
+          let card = existingCards.get(photoId);
+
+          if (card) {
+            const favBtn = card.querySelector('.card-fav-btn');
+            if (favBtn) {
+              favBtn.className = `card-fav-btn ${isFav ? 'active' : ''}`;
+              const svgPath = favBtn.querySelector('path');
+              if (svgPath) {
+                svgPath.setAttribute('fill', isFav ? '#ff3366' : 'none');
+              }
+            }
+          } else {
+            card = document.createElement('div');
+            card.className = 'photo-card';
+            card.dataset.photoId = photoId;
+
+            const isRecent = (Date.now() - (photo.timestamp || 0)) < (1000 * 60 * 10);
+            const newBadgeHtml = (idx < 2 && isRecent) ? `<span class="card-badge-new">Baru</span>` : '';
+
+            card.innerHTML = `
+            ${newBadgeHtml}
+            <button class="card-fav-btn ${isFav ? 'active' : ''}" onclick="toggleFavorite(event, '${escapeJs(photoId)}')" title="Tandai Favorit">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="${isFav ? '#ff3366' : 'none'}" stroke="currentColor" stroke-width="2">
+                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+              </svg>
+            </button>
+            <div class="photo-card-img-wrap" onclick="openLightboxById('${escapeJs(photoId)}')">
+              <img src="${photo.url}" alt="${photo.name}" loading="lazy">
+            </div>
+            <div class="photo-card-bar">
+              <span class="photo-meta-text" title="${photo.name}">#${allPhotos.length - idx} • ${formatTime(photo.timestamp)}</span>
+              <div class="photo-card-actions">
+                <a href="${photo.url}" download="${photo.name}" class="btn-card-download" title="Unduh Foto Ini" onclick="event.stopPropagation()">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          `;
+          }
+          grid.appendChild(card);
+        });
+      }
+
+      function toggleFavorite(e, id) {
+        e.stopPropagation();
+        if (favoriteIds.includes(id)) {
+          favoriteIds = favoriteIds.filter(fId => fId !== id);
+        } else {
+          favoriteIds.push(id);
+        }
+        localStorage.setItem(`piufoto_fav_${currentFolder}`, JSON.stringify(favoriteIds));
+        updateFavCount();
+        lastRenderedFingerprint = '';
+        renderPhotos();
+      }
+
+      function updateFavCount() {
+        const favCountEl = document.getElementById('fav-count');
+        if (favCountEl) favCountEl.innerText = `(${favoriteIds.length})`;
+      }
+
+      function setFilterMode(mode) {
+        currentFilter = mode;
+        document.getElementById('tab-all').classList.toggle('active', mode === 'all');
+        document.getElementById('tab-fav').classList.toggle('active', mode === 'fav');
+        lastRenderedFingerprint = '';
+        renderPhotos();
+      }
+
+      // Lightbox Modal
+      function openLightboxById(photoId) {
+        const idx = allPhotos.findIndex(p => (p.id || p.name) === photoId);
+        if (idx !== -1) {
+          currentLightboxIdx = idx;
+          showLightboxPhoto(allPhotos[idx]);
+        }
+      }
+
+      let lightboxRotation = 0;
+
+      function showLightboxPhoto(photo) {
+        if (!photo) return;
+        lightboxRotation = 0;
+        applyLightboxRotation();
+        document.getElementById('lightbox-img').src = photo.url;
+        document.getElementById('lightbox-filename').innerText = photo.name;
+
+        const dlLink = document.getElementById('lightbox-download-link');
+        dlLink.href = photo.url;
+        dlLink.setAttribute('download', photo.name);
+
+        document.getElementById('lightbox').classList.add('active');
+      }
+
+      function rotateLightboxPhoto() {
+        lightboxRotation = (lightboxRotation + 90) % 360;
+        applyLightboxRotation();
+      }
+
+      function applyLightboxRotation() {
+        const img = document.getElementById('lightbox-img');
+        if (img) {
+          img.style.transform = `rotate(${lightboxRotation}deg)`;
+          img.style.transition = 'transform 0.25s ease';
+        }
+      }
+
+      function closeLightbox() {
+        document.getElementById('lightbox').classList.remove('active');
+        lightboxRotation = 0;
+        applyLightboxRotation();
+      }
+
+      function navigateLightbox(dir) {
+        if (allPhotos.length === 0) return;
+        currentLightboxIdx = (currentLightboxIdx + dir + allPhotos.length) % allPhotos.length;
+        showLightboxPhoto(allPhotos[currentLightboxIdx]);
+      }
+
+      async function shareCurrentPhoto() {
+        const currentPhoto = allPhotos[currentLightboxIdx];
+        if (!currentPhoto) return;
+        const fullUrl = window.location.origin + currentPhoto.url;
+        if (navigator.share) {
+          try {
+            await navigator.share({
+              title: `Foto ${currentPhoto.name}`,
+              text: `Lihat dan unduh foto estetik berbingkai dari ${document.getElementById('gallery-folder-title').innerText}`,
+              url: fullUrl
+            });
+          } catch (e) { }
+        } else {
+          try {
+            await navigator.clipboard.writeText(fullUrl);
+            alert('Tautan foto berhasil disalin ke clipboard!');
+          } catch (e) {
+            prompt('Salin link foto:', fullUrl);
+          }
+        }
+      }
+
+
+
+      // Keyboard navigation
+      window.addEventListener('keydown', (e) => {
+        if (!document.getElementById('lightbox').classList.contains('active')) return;
+        if (e.key === 'Escape') closeLightbox();
+        if (e.key === 'ArrowLeft') navigateLightbox(-1);
+        if (e.key === 'ArrowRight') navigateLightbox(1);
+      });
+
+      // Helper Functions
+      function escapeJs(str) {
+        if (!str) return '';
+        return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      }
+
+      function formatTime(timestamp) {
+        if (!timestamp) return '';
+        const d = new Date(timestamp);
+        return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+      }
+
+      // Auto-poll photos every 2.5 seconds & folder list every 3.5 seconds
+      setInterval(() => {
+        if (currentFolder) fetchPhotos();
+      }, 2500);
+      setInterval(fetchFoldersList, 3500);
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        initPageMeta();
+        await fetchFoldersList();
+        if (currentFolder) {
+          await fetchPhotos();
+        }
+      });
+    </script>
+</body>
+
+</html>
