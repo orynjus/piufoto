@@ -2,7 +2,6 @@
   "name": "piufoto",
   "version": "2.2.0",
   "description": "Piufoto - Realtime Google Drive OTG Uploader with Automatic Frame Templates",
-  "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },

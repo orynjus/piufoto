@@ -4,18 +4,23 @@ const path = require('path');
 const os = require('os');
 
 const PORT = process.env.PORT || 3000;
-const BASE_GALLERY_DIR = path.join(__dirname, 'gallery-photos');
+const BASE_GALLERY_DIR = process.env.VERCEL
+  ? path.join(os.tmpdir(), 'gallery-photos')
+  : path.join(__dirname, 'gallery-photos');
 
-// Ensure base gallery directory exists
-if (!fs.existsSync(BASE_GALLERY_DIR)) {
-  fs.mkdirSync(BASE_GALLERY_DIR, { recursive: true });
-}
-
-// Ensure at least a default folder exists
+// Ensure base gallery directory exists (safely handle read-only environments like Vercel)
 const DEFAULT_FOLDER = 'Sesi_01';
 const defaultFolderPath = path.join(BASE_GALLERY_DIR, DEFAULT_FOLDER);
-if (!fs.existsSync(defaultFolderPath)) {
-  fs.mkdirSync(defaultFolderPath, { recursive: true });
+
+try {
+  if (!fs.existsSync(BASE_GALLERY_DIR)) {
+    fs.mkdirSync(BASE_GALLERY_DIR, { recursive: true });
+  }
+  if (!fs.existsSync(defaultFolderPath)) {
+    fs.mkdirSync(defaultFolderPath, { recursive: true });
+  }
+} catch (err) {
+  console.warn("Could not create local gallery dir:", err.message);
 }
 
 const MIME_TYPES = {
@@ -544,12 +549,16 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, '0.0.0.0', () => {
-  const localIp = getLocalIp();
-  console.log(`\n=============================================================`);
-  console.log(`📸 PIUFOTO MULTI-SESSION GALLERY SERVER (ACTIVE)`);
-  console.log(`-------------------------------------------------------------`);
-  console.log(`- Dashboard: http://localhost:${PORT}`);
-  console.log(`- Akses Lokal: http://${localIp}:${PORT}`);
-  console.log(`=============================================================\n`);
-});
+if (require.main === module || !process.env.VERCEL) {
+  server.listen(PORT, '0.0.0.0', () => {
+    const localIp = getLocalIp();
+    console.log(`\n=============================================================`);
+    console.log(`📸 PIUFOTO MULTI-SESSION GALLERY SERVER (ACTIVE)`);
+    console.log(`-------------------------------------------------------------`);
+    console.log(`- Dashboard: http://localhost:${PORT}`);
+    console.log(`- Akses Lokal: http://${localIp}:${PORT}`);
+    console.log(`=============================================================\n`);
+  });
+}
+
+module.exports = server;
