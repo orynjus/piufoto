@@ -29,13 +29,18 @@ if [ ! -d "$HOME/storage/shared" ] && [ ! -d "/sdcard/Documents" ]; then
   fi
 fi
 
-# 1C. Pastikan konfigurasi DNS Termux mengarah ke Cloudflare & Google DNS
-# (Mencegah error 'lookup v2 origin tunnel' / '[::1]:53 connection refused')
+# 1C. Pastikan konfigurasi DNS & Hosts Termux lengkap
+# (Mencegah error 'lookup v2 origin tunnel' / 'lookup localhost: no such host')
 mkdir -p "$PREFIX/etc"
 cat << 'EOF' > "$PREFIX/etc/resolv.conf"
 nameserver 1.1.1.1
 nameserver 8.8.8.8
 nameserver 1.0.0.1
+EOF
+
+cat << 'EOF' > "$PREFIX/etc/hosts"
+127.0.0.1 localhost
+::1 localhost
 EOF
 
 # 2. Periksa dependensi Node.js, curl & ca-certificates
@@ -99,14 +104,14 @@ sleep 1
 
 # 5. Nyalakan server Node.js TERLEBIH DAHULU
 echo "[5/5] Menyalakan Server Node.js Piufoto di port 3000..."
-node local-server.js > server.log 2>&1 &
+nohup node local-server.js > server.log 2>&1 &
 NODE_PID=$!
 
 # Tunggu sampai server Node.js benar-benar siap merespons (Healthcheck)
 echo "Menunggu kesiapan server internal..."
 SERVER_READY=0
 for i in {1..15}; do
-  if curl -s http://127.0.0.1:3000/api/info >/dev/null 2>&1 || curl -s "http://[::1]:3000/api/info" >/dev/null 2>&1; then
+  if curl -s http://127.0.0.1:3000/api/info >/dev/null 2>&1 || curl -s http://localhost:3000/api/info >/dev/null 2>&1; then
     SERVER_READY=1
     break
   fi
@@ -114,7 +119,7 @@ for i in {1..15}; do
 done
 
 if [ $SERVER_READY -eq 1 ]; then
-  echo "✓ Server Node.js siap dan merespons dengan normal di port 3000!"
+  echo "✓ Server Node.js siap dan merespons normal di port 3000!"
 else
   echo "⚠ Peringatan: Server belum merespons dalam 15 detik. Isi log server:"
   cat server.log
@@ -134,7 +139,15 @@ echo "------------------------------------------------------------------"
 echo ""
 
 # Tangani penutupan bersih dengan Ctrl+C
-trap 'echo "Menutup server..."; kill $NODE_PID 2>/dev/null; exit 0' SIGINT SIGTERM
+cleanup() {
+  echo ""
+  echo "Menutup server Piufoto & Cloudflared..."
+  kill $NODE_PID 2>/dev/null || true
+  pkill -f "cloudflared" 2>/dev/null || true
+  pkill -f "local-server.js" 2>/dev/null || true
+  exit 0
+}
+trap cleanup SIGINT SIGTERM
 
 TUNNEL_TOKEN="eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5NmM4YzYtYzRkNy00ZWU0LWE4YzEtYTQ4ODUzODM1ODRlIiwicyI6IllXTTBNMlF5WVRjdE1qSmxOUzAwWkRNekxXRXhZV1l0WXpBMU5UQXdaV1V6WmpWaiJ9"
 
@@ -142,5 +155,6 @@ TUNNEL_TOKEN="eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5Nm
 export TUNNEL_EDGE_IP_VERSION=4
 export GODEBUG=netdns=go
 
-# Jalankan Cloudflare Tunnel dengan protokol HTTP2 dan IPv4 edge version
-exec "$CLOUDFLARED_BIN" tunnel --protocol http2 --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
+# Jalankan Cloudflare Tunnel (tanpa exec agar node server di background tidak terbunuh)
+"$CLOUDFLARED_BIN" tunnel --protocol http2 --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
+cleanup
