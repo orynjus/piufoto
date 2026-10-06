@@ -94,6 +94,7 @@ function resolveBaseGalleryDir() {
 }
 
 const BASE_GALLERY_DIR = resolveBaseGalleryDir();
+const DEFAULT_FOLDER = 'Sesi_01';
 
 // Base gallery directory (reads from /sdcard/Documents/Piufoto on Android)
 try {
