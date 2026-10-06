@@ -9,7 +9,7 @@
 cd "$(dirname "$0")"
 
 echo "=================================================================="
-echo "  PIUFOTO STANDALONE ANDROID SERVER (100% BEBAS LAPTOP)"
+echo "  PIUFOTO STANDALONE ANDROID SERVER"
 echo "  Domain Publik: https://foto.berkisahkita.web.id"
 echo "=================================================================="
 echo ""
@@ -29,32 +29,66 @@ if [ ! -d "$HOME/storage/shared" ] && [ ! -d "/sdcard/Documents" ]; then
   fi
 fi
 
+# 1C. Pastikan konfigurasi DNS Termux mengarah ke Cloudflare & Google DNS
+# (Mencegah error 'lookup v2 origin tunnel' / '[::1]:53 connection refused')
+mkdir -p "$PREFIX/etc"
+cat << 'EOF' > "$PREFIX/etc/resolv.conf"
+nameserver 1.1.1.1
+nameserver 8.8.8.8
+nameserver 1.0.0.1
+EOF
+
 # 2. Periksa dependensi Node.js, curl & ca-certificates
-echo "[2/5] Memeriksa paket Node.js & sertifikat..."
+echo "[2/5] Memeriksa paket Termux (nodejs, curl, ca-certificates)..."
 if ! command -v node >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
   echo "Memasang paket penting (nodejs, curl, ca-certificates)..."
-  pkg update -y && pkg install -y nodejs curl ca-certificates
+  pkg update -y || true
+  pkg install -y nodejs curl ca-certificates
 fi
 
-# 3. Periksa & Download Cloudflared untuk arsitektur Android (ARM64)
+# 3. Pastikan Cloudflared yang dipakai adalah versi resmi Termux (didukung penuh Android)
 echo "[3/5] Memeriksa Cloudflared binary..."
-CLOUDFLARED_BIN="$HOME/cloudflared"
+# Hapus binary GitHub lama jika ada karena menyebabkan error DNS di Android
+if [ -f "$HOME/cloudflared" ]; then
+  rm -f "$HOME/cloudflared"
+fi
 
-if [ ! -f "$CLOUDFLARED_BIN" ]; then
-  ARCH=$(uname -m)
-  echo "Mendeteksi arsitektur CPU: $ARCH"
-  
-  DOWNLOAD_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
-  if [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "arm" ]; then
-    DOWNLOAD_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm"
-  elif [ "$ARCH" = "x86_64" ]; then
-    DOWNLOAD_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64"
+if ! command -v cloudflared >/dev/null 2>&1; then
+  echo "Memasang cloudflared resmi Termux (kompatibel penuh dengan DNS Android)..."
+  pkg update -y || true
+  pkg install -y cloudflared || {
+    echo "Mencoba memasang dari repo tur-repo..."
+    pkg install -y tur-repo && pkg install -y cloudflared
+  }
+fi
+
+if command -v cloudflared >/dev/null 2>&1; then
+  CLOUDFLARED_BIN="cloudflared"
+  echo "✓ Menggunakan Cloudflared resmi Termux: $(command -v cloudflared)"
+else
+  # Fallback darurat jika pkg tidak menemukan package
+  CLOUDFLARED_BIN="$HOME/cloudflared"
+  if [ ! -f "$CLOUDFLARED_BIN" ]; then
+    ARCH=$(uname -m)
+    DOWNLOAD_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64"
+    if [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "arm" ]; then
+      DOWNLOAD_URL="https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm"
+    fi
+    echo "Mengunduh Cloudflared fallback..."
+    curl -L -s "$DOWNLOAD_URL" -o "$CLOUDFLARED_BIN"
+    chmod +x "$CLOUDFLARED_BIN"
   fi
+  echo "✓ Menggunakan Cloudflared binary fallback: $CLOUDFLARED_BIN"
+fi
 
-  echo "Mengunduh Cloudflared untuk Android dari GitHub..."
-  curl -L -s "$DOWNLOAD_URL" -o "$CLOUDFLARED_BIN"
-  chmod +x "$CLOUDFLARED_BIN"
-  echo "✓ Cloudflared berhasil diunduh dan dipasang di $CLOUDFLARED_BIN"
+# 3B. Cek konektivitas internet tablet
+echo "Memeriksa koneksi internet tablet..."
+if ! curl -s --head --connect-timeout 4 https://1.1.1.1 >/dev/null 2>&1; then
+  echo "⚠ PERINGATAN KONEKSI INTERNET:"
+  echo "  Tablet belum terhubung ke internet atau DNS tidak merespons!"
+  echo "  Pastikan Data Seluler (Kuota) atau Wi-Fi aktif."
+  echo "  Jika tablet terhubung ke Wi-Fi kamera, pastikan Data Seluler tetap aktif!"
+  echo ""
 fi
 
 # 4. Hentikan proses lama jika ada yang masih berjalan di latar belakang
@@ -104,5 +138,9 @@ trap 'echo "Menutup server..."; kill $NODE_PID 2>/dev/null; exit 0' SIGINT SIGTE
 
 TUNNEL_TOKEN="eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5NmM4YzYtYzRkNy00ZWU0LWE4YzEtYTQ4ODUzODM1ODRlIiwicyI6IllXTTBNMlF5WVRjdE1qSmxOUzAwWkRNekxXRXhZV1l0WXpBMU5UQXdaV1V6WmpWaiJ9"
 
-# Jalankan Cloudflare Tunnel dengan protokol HTTP2 (kompatibel penuh dengan jaringan seluler 4G/5G)
-exec "$CLOUDFLARED_BIN" tunnel --protocol http2 --no-autoupdate run --token "$TUNNEL_TOKEN"
+# Set konfigurasi DNS & paksa IPv4 edge connection agar tidak crash di Android
+export TUNNEL_EDGE_IP_VERSION=4
+export GODEBUG=netdns=go
+
+# Jalankan Cloudflare Tunnel dengan protokol HTTP2 dan IPv4 edge version
+exec "$CLOUDFLARED_BIN" tunnel --protocol http2 --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
