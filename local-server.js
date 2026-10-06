@@ -1250,6 +1250,7 @@ const requestHandler = (req, res) => {
 };
 
 let server;
+let serverV6;
 if (require.main === module) {
   server = http.createServer(requestHandler);
   server.on('error', (err) => {
@@ -1262,13 +1263,24 @@ if (require.main === module) {
       console.error('Server error:', err);
     }
   });
-  server.listen(PORT, () => {
+  server.listen(PORT, '0.0.0.0', () => {
     const localIp = getLocalIp();
     console.log(`\n=============================================================`);
     console.log(`📸 PIUFOTO MULTI-SESSION GALLERY SERVER (ACTIVE)`);
     console.log(`-------------------------------------------------------------`);
     console.log(`- Dashboard: http://localhost:${PORT}`);
-    console.log(`- Akses Lokal: http://${localIp}:${PORT}`);
+    console.log(`- Akses Lokal IPv4: http://${localIp}:${PORT}`);
+
+    // Buka listener IPv6 kedua ([::1]) untuk kompatibilitas Cloudflare Tunnel di Linux/Android
+    try {
+      serverV6 = http.createServer(requestHandler);
+      serverV6.on('error', () => {
+        // Abaikan jika sistem sudah memiliki dual-stack socket otomatis
+      });
+      serverV6.listen(PORT, '::', () => {
+        console.log(`- Akses Dual-Stack IPv6 ([::1]): AKTIF`);
+      });
+    } catch(e) {}
 
     // Cek integrasi penyimpanan Android / Termux
     const androidGal = getAndroidGalleryDir();
