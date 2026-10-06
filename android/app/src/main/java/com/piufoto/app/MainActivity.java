@@ -13,6 +13,8 @@ public class MainActivity extends BridgeActivity {
     public void onCreate(Bundle savedInstanceState) {
         registerPlugin(UsbTetherPlugin.class);
         super.onCreate(savedInstanceState);
+        // Cegah layar tablet mati / tidur saat aplikasi Piufoto sedang aktif di photobooth
+        getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
     }
 
     @Override

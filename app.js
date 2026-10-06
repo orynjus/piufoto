@@ -2137,9 +2137,29 @@ function initDashboardSSE() {
 }
 
 // ==========================================
+// Screen Wake Lock API: Cegah layar tablet mati / tidur otomatis saat photobooth aktif
+let appWakeLockSentinel = null;
+async function requestScreenWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      appWakeLockSentinel = await navigator.wakeLock.request('screen');
+      console.log('✓ Screen WakeLock aktif: Layar tablet tidak akan mati otomatis.');
+    }
+  } catch (err) {
+    // Wake Lock tidak didukung atau diblokir OS
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    requestScreenWakeLock();
+  }
+});
+
 // 10. EVENT LISTENERS INITIALIZATION
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
+  requestScreenWakeLock();
   initSamplePreviewImage();
   await loadSavedSettings();
   await fetchServerInfo();
