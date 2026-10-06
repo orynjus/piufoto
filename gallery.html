@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>Galeri Foto Klien - BerkisahKita</title>
 
   <!-- Modern Typography -->
@@ -13,11 +13,18 @@
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
     rel="stylesheet">
 
-
   <style>
     /* ========================================================
        1. THEME TOKENS (CSS VARIABLES)
        ======================================================== */
+    :root {
+      --header-height: 56px;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+    }
+
     :root,
     [data-theme="wedding"] {
       --bg: #140913;
@@ -101,6 +108,11 @@
       -webkit-tap-highlight-color: transparent;
     }
 
+    html, body {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
     body {
       background-color: var(--bg);
       color: var(--text-main);
@@ -108,37 +120,43 @@
       min-height: 100vh;
       background-image: var(--grad-bg);
       background-attachment: fixed;
-      padding-bottom: 90px;
+      padding-top: var(--safe-top);
+      padding-bottom: calc(var(--safe-bottom) + 85px);
+      padding-left: var(--safe-left);
+      padding-right: var(--safe-right);
       transition: background 0.3s ease, color 0.3s ease;
     }
 
     /* ========================================================
-       3. STICKY HEADER & BRANDING
+       3. STICKY HEADER & BRANDING (FULLY RESPONSIVE)
        ======================================================== */
     .client-header {
       position: sticky;
       top: 0;
       z-index: 50;
-      background: rgba(12, 10, 16, 0.88);
+      background: rgba(12, 10, 16, 0.92);
       backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       border-bottom: 1px solid var(--border);
-      padding: 12px 18px;
+      padding: 8px clamp(10px, 3vw, 18px);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 8px;
+      min-height: var(--header-height);
     }
 
     .brand-wrap {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       min-width: 0;
+      flex: 1;
     }
 
     .brand-logo-icon {
-      width: 38px;
-      height: 38px;
+      width: 35px;
+      height: 35px;
       background: var(--grad-primary);
       border-radius: 10px;
       display: flex;
@@ -149,55 +167,60 @@
     }
 
     .brand-logo-icon svg {
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       color: white;
     }
 
     .brand-info {
       min-width: 0;
+      flex: 1;
     }
 
     .event-title-h1 {
       font-family: var(--theme-font-title);
-      font-size: 1.15rem;
+      font-size: clamp(0.95rem, 3.2vw, 1.15rem);
       font-weight: 700;
       letter-spacing: -0.2px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-      max-width: 210px;
+      max-width: 100%;
     }
 
     .studio-subtitle {
-      font-size: 0.72rem;
+      font-size: clamp(0.65rem, 2.5vw, 0.72rem);
       color: var(--text-muted);
       display: flex;
       align-items: center;
       gap: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       flex-shrink: 0;
     }
 
-    /* Theme Switcher Button */
+    /* Buttons in Header */
     .theme-picker-btn {
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid var(--border);
       color: var(--text-main);
       padding: 6px 10px;
       border-radius: 20px;
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       cursor: pointer;
       transition: all 0.2s ease;
+      white-space: nowrap;
     }
 
     .theme-picker-btn:hover {
@@ -205,17 +228,22 @@
       border-color: var(--border-highlight);
     }
 
+    .session-header-btn {
+      max-width: 150px;
+    }
+
     .live-status-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 5px 10px;
+      gap: 5px;
+      padding: 5px 9px;
       background: rgba(16, 185, 129, 0.14);
       border: 1px solid rgba(16, 185, 129, 0.35);
       border-radius: 20px;
       font-size: 0.72rem;
       font-weight: 700;
       color: #34d399;
+      white-space: nowrap;
     }
 
     .live-dot {
@@ -224,27 +252,69 @@
       background: #10b981;
       border-radius: 50%;
       animation: pulse-dot 1.2s infinite;
+      flex-shrink: 0;
     }
 
     @keyframes pulse-dot {
-
-      0%,
-      100% {
+      0%, 100% {
         opacity: 1;
         transform: scale(1);
       }
-
       50% {
         opacity: 0.35;
         transform: scale(0.75);
       }
     }
 
+    @media (max-width: 600px) {
+      .client-header {
+        padding: 6px 10px;
+        gap: 5px;
+      }
+      .brand-logo-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+      }
+      .brand-logo-icon svg {
+        width: 16px;
+        height: 16px;
+      }
+      .session-header-btn {
+        max-width: 105px;
+        padding: 5px 7px;
+        font-size: 0.7rem;
+      }
+      #header-active-session-name {
+        max-width: 55px !important;
+      }
+      .header-btn-text {
+        display: none;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .session-header-btn {
+        max-width: 80px;
+        padding: 5px 6px;
+      }
+      #header-active-session-name {
+        max-width: 38px !important;
+      }
+      .live-status-pill .live-status-text {
+        display: none;
+      }
+      .live-status-pill {
+        padding: 6px;
+        border-radius: 50%;
+      }
+    }
+
     /* ========================================================
-       4. HERO BANNER
+       4. HERO BANNER (COMPACT ON MOBILE)
        ======================================================== */
     .hero-banner {
-      padding: 26px 20px 18px;
+      padding: 22px 16px 14px;
       text-align: center;
       max-width: 800px;
       margin: 0 auto;
@@ -254,42 +324,41 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 14px;
+      padding: 4px 12px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--border);
       border-radius: 20px;
       font-size: 0.74rem;
       color: var(--accent);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       font-weight: 600;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
     }
 
     .hero-title {
       font-family: var(--theme-font-title);
-      font-size: clamp(1.8rem, 6vw, 2.7rem);
+      font-size: clamp(1.4rem, 6.5vw, 2.4rem);
       font-weight: 800;
-      line-height: 1.18;
-      margin-bottom: 10px;
+      line-height: 1.2;
+      margin-bottom: 8px;
       background: var(--grad-primary);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     .hero-subtitle {
-      font-size: 0.88rem;
+      font-size: clamp(0.78rem, 2.8vw, 0.88rem);
       color: var(--text-muted);
       max-width: 520px;
-      margin: 0 auto 18px;
-      line-height: 1.5;
+      margin: 0 auto 12px;
+      line-height: 1.48;
     }
 
-    /* Quick Action Toolbar */
     .hero-toolbar {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
@@ -297,13 +366,13 @@
       background: var(--bg-card);
       border: 1px solid var(--border);
       color: var(--text-main);
-      padding: 8px 16px;
+      padding: 7px 14px;
       border-radius: 10px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 600;
       display: inline-flex;
       align-items: center;
-      gap: 7px;
+      gap: 6px;
       cursor: pointer;
       text-decoration: none;
       transition: all 0.2s ease;
@@ -323,31 +392,40 @@
       box-shadow: 0 6px 20px var(--accent-glow);
     }
 
-    .btn-hero-primary:hover {
-      opacity: 0.95;
-      transform: translateY(-2px);
+    @media (max-width: 600px) {
+      .hero-banner {
+        padding: 14px 12px 6px;
+      }
+      .hero-tag {
+        font-size: 0.68rem;
+        padding: 3px 10px;
+        margin-bottom: 5px;
+      }
+      .hero-subtitle {
+        margin-bottom: 8px;
+      }
     }
 
     /* ========================================================
-       5. FILTER & TAB BAR
+       5. FILTER & TAB BAR + VIEW TOGGLE
        ======================================================== */
     .filter-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 8px 20px 14px;
+      padding: 6px clamp(10px, 3vw, 20px) 12px;
       max-width: 1200px;
       margin: 0 auto;
-      gap: 12px;
+      gap: 8px;
       flex-wrap: wrap;
     }
 
     .tab-group {
       display: flex;
       background: rgba(255, 255, 255, 0.05);
-      padding: 4px;
+      padding: 3px;
       border-radius: 10px;
-      gap: 4px;
+      gap: 3px;
       border: 1px solid var(--border);
     }
 
@@ -355,15 +433,16 @@
       background: transparent;
       border: none;
       color: var(--text-muted);
-      padding: 7px 14px;
+      padding: 6px 12px;
       border-radius: 7px;
-      font-size: 0.82rem;
+      font-size: clamp(0.72rem, 2.5vw, 0.82rem);
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      white-space: nowrap;
     }
 
     .tab-btn.active {
@@ -372,10 +451,53 @@
       box-shadow: 0 2px 10px var(--accent-glow);
     }
 
-    .gallery-counter-info {
-      font-size: 0.78rem;
+    /* View Mode Toggle: 2-Col vs 1-Col */
+    .view-toggle-group {
+      display: flex;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      padding: 3px;
+      border-radius: 10px;
+      gap: 3px;
+    }
+
+    .view-toggle-btn {
+      background: transparent;
+      border: none;
       color: var(--text-muted);
-      font-weight: 500;
+      padding: 5px 8px;
+      border-radius: 7px;
+      font-size: 0.74rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .view-toggle-btn.active {
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+
+    @media (max-width: 480px) {
+      .filter-bar {
+        padding: 4px 10px 10px;
+      }
+      .tab-btn {
+        padding: 5px 8px;
+        font-size: 0.72rem;
+      }
+      .view-btn-label {
+        display: none;
+      }
+      .view-toggle-btn {
+        padding: 5px 6px;
+      }
     }
 
     /* ========================================================
@@ -384,33 +506,68 @@
     .gallery-container {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 0 16px;
+      padding: 0 clamp(8px, 2.5vw, 16px);
     }
 
-    /* CSS Multi-Column Masonry: Menjaga rasio asli foto tanpa potongan */
+    /* Responsive Photo Grid with Natural Left-to-Right Row Flow */
     .photo-masonry-grid {
-      column-count: 2;
-      column-gap: 14px;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
       width: 100%;
+      align-items: start;
+    }
+
+    /* 1-Column Feed Mode on Mobile */
+    .photo-masonry-grid.view-single {
+      grid-template-columns: 1fr !important;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 380px) {
+      .photo-masonry-grid:not(.view-single) {
+        gap: 8px;
+      }
+      .photo-card {
+        margin-bottom: 0 !important;
+        border-radius: 10px !important;
+      }
+      .photo-card-bar {
+        padding: 6px 8px !important;
+      }
+      .photo-meta-text {
+        font-size: 0.65rem !important;
+      }
+      .btn-card-download {
+        width: 26px !important;
+        height: 26px !important;
+      }
     }
 
     @media (min-width: 640px) {
-      .photo-masonry-grid {
-        column-count: 3;
-        column-gap: 18px;
+      .photo-masonry-grid:not(.view-single) {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
       }
     }
 
     @media (min-width: 1024px) {
-      .photo-masonry-grid {
-        column-count: 4;
-        column-gap: 22px;
+      .photo-masonry-grid:not(.view-single) {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+      }
+    }
+
+    @media (min-width: 1440px) {
+      .photo-masonry-grid:not(.view-single) {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 24px;
       }
     }
 
     .photo-card {
-      break-inside: avoid;
-      margin-bottom: 16px;
+      margin-bottom: 0;
       position: relative;
       border-radius: 14px;
       overflow: hidden;
@@ -429,7 +586,6 @@
       border-color: var(--border-highlight);
     }
 
-    /* GAMBAR TIDAK TERPOTONG (height: auto & object-fit: contain) */
     .photo-card-img-wrap {
       position: relative;
       width: 100%;
@@ -443,7 +599,6 @@
       height: auto;
       display: block;
       object-fit: contain;
-      /* 100% UTUH: Bingkai tidak terpotong sama sekali! */
       transition: transform 0.35s ease;
     }
 
@@ -451,16 +606,15 @@
       transform: scale(1.02);
     }
 
-    /* Badges */
     .card-badge-new {
       position: absolute;
-      top: 10px;
-      left: 10px;
+      top: 8px;
+      left: 8px;
       background: var(--grad-primary);
       color: white;
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       font-weight: 800;
-      padding: 3px 8px;
+      padding: 2px 7px;
       border-radius: 6px;
       box-shadow: 0 2px 8px var(--accent-glow);
       z-index: 5;
@@ -468,13 +622,14 @@
 
     .card-fav-btn {
       position: absolute;
-      top: 10px;
-      right: 10px;
+      top: 8px;
+      right: 8px;
       background: rgba(0, 0, 0, 0.65);
       backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -487,7 +642,7 @@
 
     .card-fav-btn:hover {
       background: rgba(0, 0, 0, 0.85);
-      transform: scale(1.12);
+      transform: scale(1.1);
     }
 
     .card-fav-btn.active {
@@ -495,37 +650,39 @@
       border-color: #ff3366;
     }
 
-    /* Card Footer Bar */
     .photo-card-bar {
-      padding: 10px 12px;
+      padding: 8px 10px;
       background: rgba(10, 8, 14, 0.94);
       display: flex;
       align-items: center;
       justify-content: space-between;
       border-top: 1px solid rgba(255, 255, 255, 0.06);
+      gap: 6px;
     }
 
     .photo-meta-text {
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      max-width: 60%;
+      flex: 1;
+      min-width: 0;
     }
 
     .photo-card-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
+      flex-shrink: 0;
     }
 
     .btn-card-download {
       background: rgba(255, 255, 255, 0.1);
       border: 1px solid var(--border);
       color: var(--text-main);
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       border-radius: 7px;
       display: flex;
       align-items: center;
@@ -543,23 +700,33 @@
     }
 
     /* ========================================================
-       7. LIGHTBOX MODAL (FULLSCREEN HD PREVIEW)
+       7. LIGHTBOX MODAL (RESPONSIVE FULLSCREEN HD PREVIEW)
        ======================================================== */
     .lightbox-modal {
       position: fixed;
       inset: 0;
       z-index: 100;
-      background: rgba(0, 0, 0, 0.94);
-      backdrop-filter: blur(14px);
-      display: none;
+      background: rgba(0, 0, 0, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: space-between;
-      padding: 16px;
+      padding: 10px 10px calc(10px + var(--safe-bottom));
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 0.28s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.28s;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
     }
 
     .lightbox-modal.active {
-      display: flex;
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     .lightbox-header {
@@ -568,31 +735,79 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 6px 10px;
+      padding: 4px 6px;
+      gap: 8px;
+      z-index: 10;
+      transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
     .lightbox-title-text {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       color: #cbd5e1;
       font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: clamp(90px, 35vw, 240px);
+    }
+
+    .lightbox-zoom-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 20px;
+      color: #fff;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      white-space: nowrap;
+    }
+
+    .btn-lightbox-rotate {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-lightbox-rotate:hover {
+      background: rgba(255, 255, 255, 0.22);
     }
 
     .btn-close-lightbox {
       background: rgba(255, 255, 255, 0.12);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: all 0.2s ease;
+      font-size: 1rem;
+      flex-shrink: 0;
     }
 
     .btn-close-lightbox:hover {
       background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.05);
     }
 
     .lightbox-viewport {
@@ -603,14 +818,34 @@
       align-items: center;
       justify-content: center;
       position: relative;
+      overflow: hidden;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
 
     .lightbox-viewport img {
       max-width: 100%;
-      max-height: 76vh;
+      max-height: calc(100vh - 165px);
       object-fit: contain;
       border-radius: 8px;
       box-shadow: 0 15px 45px rgba(0, 0, 0, 0.9);
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      will-change: transform, opacity;
+      transform-origin: center center;
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+    }
+
+    .lightbox-viewport img.dragging {
+      cursor: grabbing;
+      transition: none !important;
+    }
+
+    .lightbox-viewport img.animating {
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease !important;
     }
 
     .lightbox-nav-btn {
@@ -619,6 +854,7 @@
       transform: translateY(-50%);
       background: rgba(0, 0, 0, 0.6);
       backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
       width: 44px;
@@ -629,10 +865,12 @@
       justify-content: center;
       cursor: pointer;
       transition: all 0.2s;
+      z-index: 5;
     }
 
     .lightbox-nav-btn:hover {
       background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-50%) scale(1.08);
     }
 
     .lightbox-nav-btn.prev {
@@ -645,10 +883,12 @@
 
     .lightbox-footer {
       width: 100%;
-      max-width: 500px;
+      max-width: 480px;
       display: flex;
-      gap: 10px;
-      padding: 12px 0 6px;
+      gap: 8px;
+      padding: 8px 0 2px;
+      z-index: 10;
+      transition: opacity 0.2s ease, transform 0.2s ease;
     }
 
     .btn-download-hd-main {
@@ -656,36 +896,98 @@
       background: var(--grad-primary);
       color: white;
       border: none;
-      padding: 13px 20px;
+      padding: 11px 16px;
       border-radius: 12px;
-      font-size: 0.95rem;
+      font-size: clamp(0.82rem, 2.8vw, 0.95rem);
       font-weight: 700;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 9px;
+      gap: 8px;
       cursor: pointer;
       text-decoration: none;
       box-shadow: 0 6px 20px var(--accent-glow);
+      white-space: nowrap;
     }
 
     .btn-share-photo {
       background: rgba(255, 255, 255, 0.12);
       border: 1px solid var(--border);
       color: white;
-      padding: 13px 18px;
+      padding: 11px 14px;
       border-radius: 12px;
-      font-size: 0.9rem;
+      font-size: clamp(0.78rem, 2.5vw, 0.9rem);
       font-weight: 600;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 6px;
       cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .lightbox-swipe-hint {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.55);
+      text-align: center;
+      margin-top: 2px;
+      font-weight: 500;
+      z-index: 10;
+    }
+
+    @media (max-width: 640px) {
+      .lightbox-modal {
+        padding: 8px 8px calc(8px + var(--safe-bottom));
+      }
+      .lightbox-nav-btn {
+        display: none;
+      }
+      .btn-rotate-text {
+        display: none;
+      }
+      .btn-lightbox-rotate {
+        padding: 8px !important;
+        width: 35px !important;
+        height: 35px !important;
+        border-radius: 50% !important;
+        justify-content: center !important;
+      }
+      .btn-close-lightbox {
+        width: 35px;
+        height: 35px;
+      }
+      .btn-download-hd-main {
+        padding: 10px 12px;
+      }
+      .btn-share-photo {
+        padding: 10px 12px;
+      }
+      .lightbox-swipe-hint {
+        font-size: 0.65rem;
+      }
+    }
+
+    @media (max-height: 520px) and (orientation: landscape) {
+      .lightbox-viewport img {
+        max-height: calc(100vh - 105px);
+      }
+      .lightbox-header {
+        padding: 2px 6px;
+      }
+      .lightbox-footer {
+        padding: 4px 0 0;
+      }
+      .btn-download-hd-main, .btn-share-photo {
+        padding: 7px 12px;
+        font-size: 0.78rem;
+      }
+      .lightbox-swipe-hint {
+        display: none;
+      }
     }
 
     /* ========================================================
-       8. THEME PICKER MODAL
+       8. THEME PICKER & SESSION MODAL
        ======================================================== */
     .theme-modal-overlay {
       position: fixed;
@@ -693,10 +995,11 @@
       z-index: 110;
       background: rgba(0, 0, 0, 0.85);
       backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 20px;
+      padding: 16px;
     }
 
     .theme-modal-overlay.active {
@@ -708,23 +1011,25 @@
       border: 1px solid var(--border-highlight);
       border-radius: 18px;
       max-width: 440px;
-      width: 100%;
-      padding: 24px;
+      width: min(94vw, 440px);
+      padding: clamp(16px, 4vw, 24px);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      max-height: 88vh;
+      overflow-y: auto;
     }
 
     .theme-options-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin: 18px 0;
+      gap: 10px;
+      margin: 16px 0;
     }
 
     .theme-card-option {
       background: rgba(255, 255, 255, 0.04);
       border: 2px solid var(--border);
       border-radius: 12px;
-      padding: 14px 12px;
+      padding: 12px 10px;
       text-align: center;
       cursor: pointer;
       transition: all 0.2s ease;
@@ -742,25 +1047,25 @@
     }
 
     .theme-option-icon {
-      font-size: 1.8rem;
-      margin-bottom: 6px;
+      font-size: 1.6rem;
+      margin-bottom: 4px;
     }
 
     .theme-option-name {
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 700;
       color: var(--text-main);
     }
 
     .theme-option-desc {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       color: var(--text-muted);
-      margin-top: 3px;
+      margin-top: 2px;
     }
 
     .empty-state {
       text-align: center;
-      padding: 60px 20px;
+      padding: 50px 16px;
       color: var(--text-muted);
     }
 
@@ -769,7 +1074,6 @@
         opacity: 0;
         transform: scale(0.95);
       }
-
       to {
         opacity: 1;
         transform: scale(1);
@@ -777,17 +1081,17 @@
     }
 
     /* ========================================================
-       SESSION NAVIGATION BAR (PILIHAN SESI UNTUK TAMU)
+       SESSION NAVIGATION BAR (RESPONSIVE)
        ======================================================== */
     .session-nav-bar {
       background: var(--bg-surface);
       border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
+      padding: 7px clamp(8px, 2.5vw, 16px);
       position: sticky;
-      top: 61px;
+      top: var(--header-height, 56px);
       z-index: 40;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
     }
 
@@ -796,7 +1100,7 @@
       margin: 0 auto;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 8px;
     }
 
     .session-nav-label {
@@ -813,12 +1117,14 @@
     .session-pills-scroll {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       overflow-x: auto;
       scrollbar-width: none;
       -ms-overflow-style: none;
+      -webkit-overflow-scrolling: touch;
       flex: 1;
       padding: 2px 0;
+      min-width: 0;
     }
 
     .session-pills-scroll::-webkit-scrollbar {
@@ -828,17 +1134,17 @@
     .session-pill-btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      padding: 7px 14px;
+      gap: 6px;
+      padding: 6px 12px;
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border);
       border-radius: 20px;
       color: var(--text-muted);
-      font-size: 0.78rem;
+      font-size: 0.74rem;
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
-      transition: all 0.22s ease;
+      transition: all 0.2s ease;
       flex-shrink: 0;
     }
 
@@ -846,7 +1152,6 @@
       background: rgba(255, 255, 255, 0.1);
       color: var(--text-main);
       border-color: var(--border-highlight);
-      transform: translateY(-1px);
     }
 
     .session-pill-btn.active {
@@ -859,9 +1164,9 @@
 
     .session-pill-badge {
       background: rgba(0, 0, 0, 0.25);
-      padding: 1px 7px;
+      padding: 1px 6px;
       border-radius: 10px;
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 700;
     }
 
@@ -874,14 +1179,14 @@
       background: rgba(255, 255, 255, 0.07);
       border: 1px solid var(--border);
       color: var(--text-main);
-      padding: 7px 12px;
+      padding: 6px 10px;
       border-radius: 20px;
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       white-space: nowrap;
       flex-shrink: 0;
       transition: all 0.2s;
@@ -891,6 +1196,26 @@
       background: var(--accent);
       color: white;
       border-color: var(--accent);
+    }
+
+    @media (max-width: 540px) {
+      .session-nav-bar {
+        padding: 5px 8px;
+      }
+      .session-nav-label-text {
+        display: none;
+      }
+      .session-pill-btn {
+        padding: 5px 10px;
+        font-size: 0.72rem;
+      }
+      .session-modal-btn {
+        padding: 5px 8px;
+        font-size: 0.72rem;
+      }
+      .session-modal-btn-text {
+        display: none;
+      }
     }
 
     /* Modal Pilih Sesi Tamu */
@@ -904,7 +1229,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 14px;
     }
 
     .session-modal-overlay.active {
@@ -915,9 +1240,8 @@
       background: var(--bg-surface);
       border: 1px solid var(--border-highlight);
       border-radius: 18px;
-      width: 100%;
-      max-width: 480px;
-      max-height: 80vh;
+      width: min(94vw, 480px);
+      max-height: 85vh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -938,7 +1262,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 16px;
+      padding: 10px 14px;
       background: var(--bg-card);
       border: 1px solid var(--border);
       border-radius: 12px;
@@ -949,13 +1273,54 @@
     .session-item-row:hover {
       background: rgba(255, 255, 255, 0.08);
       border-color: var(--border-highlight);
-      transform: translateX(4px);
+      transform: translateX(3px);
     }
 
     .session-item-row.active {
       background: rgba(255, 77, 141, 0.15);
       border-color: var(--accent);
       box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    /* ========================================================
+       FLOATING BACK TO TOP BUTTON
+       ======================================================== */
+    .back-to-top-btn {
+      position: fixed;
+      bottom: calc(16px + var(--safe-bottom));
+      right: calc(14px + var(--safe-right));
+      background: var(--bg-card);
+      border: 1px solid var(--border-highlight);
+      color: var(--text-main);
+      padding: 8px 14px;
+      border-radius: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      z-index: 35;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(12px);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .back-to-top-btn.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .back-to-top-btn:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      transform: translateY(-2px);
     }
   </style>
 </head>
@@ -982,6 +1347,12 @@
     </div>
 
     <div class="header-actions">
+      <!-- Back to Camera / Studio Dashboard -->
+      <a href="index.html" class="theme-picker-btn" style="text-decoration: none; color: #93c5fd; background: rgba(37, 99, 235, 0.2); border-color: rgba(59, 130, 246, 0.4);" title="Kembali ke Dashboard Kamera" onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }">
+        <span>📷</span>
+        <span class="header-btn-text">Kamera</span>
+      </a>
+
       <!-- Session Switcher Button in Header -->
       <button class="theme-picker-btn session-header-btn" onclick="openSessionModal()" title="Pilih / Ganti Sesi Foto">
         <span>📁</span>
@@ -992,13 +1363,13 @@
       <!-- Theme Switcher -->
       <button class="theme-picker-btn" onclick="openThemeModal()" title="Pilih Tema Tampilan">
         <span id="theme-btn-icon">🌸</span>
-        <span id="theme-btn-label">Tema</span>
+        <span id="theme-btn-label" class="header-btn-text">Tema</span>
       </button>
 
       <!-- Live Dot Status -->
       <div class="live-status-pill" title="Terhubung secara realtime ke kamera studio">
         <span class="live-dot"></span>
-        <span>Live</span>
+        <span class="live-status-text">Live</span>
       </div>
     </div>
   </header>
@@ -1010,13 +1381,13 @@
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
         </svg>
-        <span>Pilihan Sesi:</span>
+        <span class="session-nav-label-text">Pilihan Sesi:</span>
       </div>
       <div class="session-pills-scroll" id="session-pills-container">
         <!-- Injected dynamically via JS -->
       </div>
       <button class="session-modal-btn" onclick="openSessionModal()" title="Lihat Semua Sesi">
-        <span>Semua Sesi</span>
+        <span class="session-modal-btn-text">Semua Sesi</span>
         <span id="session-total-badge" class="session-pill-badge">0</span>
       </button>
     </div>
@@ -1031,155 +1402,195 @@
     </p>
   </section>
 
+  <!-- Filter & Tab Bar + View Toggle -->
+  <div class="filter-bar">
+    <div class="tab-group">
+      <button class="tab-btn active" id="tab-all" onclick="setFilterMode('all')">
+        <span>Semua Foto</span>
+        <span id="total-count-tab" style="opacity: 0.8;">(0)</span>
+      </button>
+      <button class="tab-btn" id="tab-fav" onclick="setFilterMode('fav')">
+        <span>❤️ Favorit</span>
+        <span id="fav-count" style="opacity: 0.8;">(0)</span>
+      </button>
+    </div>
 
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <!-- Sort Order Toggle (Urut Awal vs Terbaru) -->
+      <button class="view-toggle-btn active" id="sort-order-btn" onclick="toggleSortOrder()" title="Ubah Urutan Foto" style="padding: 6px 12px; gap: 5px;">
+        <span id="sort-order-icon">⏱️</span>
+        <span id="sort-order-label" class="view-btn-label">Urut Awal</span>
+      </button>
 
-
-
-    <!-- Filter & Tab Bar -->
-    <div class="filter-bar">
-      <div class="tab-group">
-        <button class="tab-btn active" id="tab-all" onclick="setFilterMode('all')">
-          <span>Semua Foto</span>
-          <span id="total-count-tab" style="opacity: 0.8;">(0)</span>
+      <!-- View Mode Toggle: 2 Columns vs 1 Column -->
+      <div class="view-toggle-group">
+        <button class="view-toggle-btn active" id="view-mode-2col" onclick="setGridColumns(2)" title="Tampilan Grid 2 Kolom">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+            <rect x="13" y="3" width="8" height="8" rx="2"></rect>
+            <rect x="3" y="13" width="8" height="8" rx="2"></rect>
+            <rect x="13" y="13" width="8" height="8" rx="2"></rect>
+          </svg>
+          <span class="view-btn-label">Grid</span>
         </button>
-        <button class="tab-btn" id="tab-fav" onclick="setFilterMode('fav')">
-          <span>❤️ Favorit Saya</span>
-          <span id="fav-count" style="opacity: 0.8;">(0)</span>
+        <button class="view-toggle-btn" id="view-mode-1col" onclick="setGridColumns(1)" title="Tampilan Foto Besar 1 Kolom">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="3" y="4" width="18" height="7" rx="2"></rect>
+            <rect x="3" y="13" width="18" height="7" rx="2"></rect>
+          </svg>
+          <span class="view-btn-label">Besar</span>
         </button>
       </div>
     </div>
+  </div>
 
-    <!-- Masonry Photo Grid -->
-    <main class="gallery-container">
-      <div id="photo-grid" class="photo-masonry-grid"></div>
+  <!-- Masonry Photo Grid -->
+  <main class="gallery-container">
+    <div id="photo-grid" class="photo-masonry-grid"></div>
 
-      <div id="empty-state" class="empty-state" style="display: none;">
-        <div style="font-size: 3.2rem; margin-bottom: 14px;">📸</div>
-        <h3 style="font-family: var(--theme-font-title); font-size: 1.3rem; margin-bottom: 6px;">Belum Ada Foto di Sesi
-          Ini</h3>
-        <p style="font-size: 0.88rem; max-width: 440px; margin: 0 auto; line-height: 1.6;">
+    <div id="empty-state" class="empty-state" style="display: none;">
+      <div style="font-size: 3rem; margin-bottom: 12px;">📸</div>
+      <h3 style="font-family: var(--theme-font-title); font-size: 1.25rem; margin-bottom: 6px;">Belum Ada Foto di Sesi Ini</h3>
+      <p style="font-size: 0.85rem; max-width: 440px; margin: 0 auto; line-height: 1.5; color: var(--text-muted);">
 
-        </p>
-      </div>
-    </main>
+      </p>
+    </div>
+  </main>
 
-    <!-- Fullscreen Lightbox Modal -->
-    <div id="lightbox" class="lightbox-modal">
-      <div class="lightbox-header">
+  <!-- Fullscreen Lightbox Modal -->
+  <div id="lightbox" class="lightbox-modal">
+    <div class="lightbox-header">
+      <div style="display: flex; align-items: center; gap: 6px; min-width: 0; flex: 1;">
         <span id="lightbox-filename" class="lightbox-title-text">Foto HD</span>
-        <div style="display: flex; gap: 8px; align-items: center;">
-          <button class="btn-lightbox-rotate" onclick="rotateLightboxPhoto()"
-            style="background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px;"
-            title="Putar Orientasi Foto 90°">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-              <polyline points="23 4 23 10 17 10"></polyline>
-              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
-            </svg>
-            Putar 90°
-          </button>
-          <button class="btn-close-lightbox" onclick="closeLightbox()">✕</button>
-        </div>
+        <span id="lightbox-zoom-pill" class="lightbox-zoom-pill" style="display: none;" onclick="resetLightboxZoom()" title="Ketuk untuk kembali ke 1.0x">
+          <span id="lightbox-zoom-text">1.0x</span>
+          <span style="font-size: 0.65rem; opacity: 0.85;">✕</span>
+        </span>
       </div>
-
-      <div class="lightbox-viewport">
-        <button class="lightbox-nav-btn prev" onclick="navigateLightbox(-1)">‹</button>
-        <img id="lightbox-img" src="" alt="Preview Foto HD">
-        <button class="lightbox-nav-btn next" onclick="navigateLightbox(1)">›</button>
-      </div>
-
-      <div class="lightbox-footer">
-        <a id="lightbox-download-link" href="#" download class="btn-download-hd-main">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
+      <div style="display: flex; gap: 6px; align-items: center; flex-shrink: 0;">
+        <button class="btn-lightbox-rotate" onclick="rotateLightboxPhoto()" title="Putar Orientasi Foto 90°">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
           </svg>
-          Unduh Foto HD Asli
-        </a>
-        <button class="btn-share-photo" onclick="shareCurrentPhoto()">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-            <circle cx="18" cy="5" r="3"></circle>
-            <circle cx="6" cy="12" r="3"></circle>
-            <circle cx="18" cy="19" r="3"></circle>
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
-          </svg>
-          Bagikan
+          <span class="btn-rotate-text">Putar 90°</span>
         </button>
+        <button class="btn-close-lightbox" onclick="closeLightbox()" title="Tutup Foto (atau Usap ke Bawah)">✕</button>
       </div>
     </div>
 
-    <!-- Modal Pilih Tema -->
-    <div id="modal-theme-picker" class="theme-modal-overlay">
-      <div class="theme-modal-card">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="font-family: var(--theme-font-title); font-size: 1.15rem;">Pilih Tema Galeri</h3>
-          <button class="btn-close-lightbox" style="width: 32px; height: 32px;" onclick="closeThemeModal()">✕</button>
+    <div class="lightbox-viewport" id="lightbox-viewport">
+      <button class="lightbox-nav-btn prev" onclick="navigateLightbox(-1)" title="Foto Sebelumnya">‹</button>
+      <img id="lightbox-img" src="" alt="Preview Foto HD">
+      <button class="lightbox-nav-btn next" onclick="navigateLightbox(1)" title="Foto Berikutnya">›</button>
+    </div>
+
+    <div class="lightbox-footer">
+      <a id="lightbox-download-link" href="#" download class="btn-download-hd-main">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        <span>Unduh Foto</span>
+      </a>
+      <button class="btn-share-photo" onclick="shareCurrentPhoto()" title="Bagikan Foto">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <circle cx="18" cy="5" r="3"></circle>
+          <circle cx="6" cy="12" r="3"></circle>
+          <circle cx="18" cy="19" r="3"></circle>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+        </svg>
+        <span>Bagikan</span>
+      </button>
+    </div>
+    <div class="lightbox-swipe-hint">
+      
+    </div>
+  </div>
+
+  <!-- Modal Pilih Tema -->
+  <div id="modal-theme-picker" class="theme-modal-overlay">
+    <div class="theme-modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-family: var(--theme-font-title); font-size: 1.15rem;">Pilih Tema Galeri</h3>
+        <button class="btn-close-lightbox" style="width: 32px; height: 32px;" onclick="closeThemeModal()">✕</button>
+      </div>
+      <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+        Sesuaikan tampilan galeri dengan konsep acara Anda.
+      </p>
+
+      <div class="theme-options-grid">
+        <div class="theme-card-option" data-theme-val="wedding" onclick="selectTheme('wedding')">
+          <div class="theme-option-icon">🌸</div>
+          <div class="theme-option-name">Wedding Blossom</div>
+          <div class="theme-option-desc">Rose Gold &amp; Soft Floral</div>
         </div>
-        <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
-          Sesuaikan tampilan galeri dengan konsep acara Anda.
+
+        <div class="theme-card-option" data-theme-val="gold" onclick="selectTheme('gold')">
+          <div class="theme-option-icon">✨</div>
+          <div class="theme-option-name">Luxury Gold</div>
+          <div class="theme-option-desc">Hitam Pekat &amp; Emas Mewah</div>
+        </div>
+
+        <div class="theme-card-option" data-theme-val="vintage" onclick="selectTheme('vintage')">
+          <div class="theme-option-icon">🎞️</div>
+          <div class="theme-option-name">Vintage Polaroid</div>
+          <div class="theme-option-desc">Retro Sepia &amp; Warm Paper</div>
+        </div>
+
+        <div class="theme-card-option" data-theme-val="modern" onclick="selectTheme('modern')">
+          <div class="theme-option-icon">⚡</div>
+          <div class="theme-option-name">Cyber Neon</div>
+          <div class="theme-option-desc">Dark Minimalist &amp; Neon Violet</div>
+        </div>
+      </div>
+
+      <button class="btn-hero-action btn-hero-primary" style="width: 100%; justify-content: center;"
+        onclick="closeThemeModal()">
+        Terapkan Tema Ini
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Pilih Sesi Foto Tamu -->
+  <div id="modal-session-picker" class="session-modal-overlay" onclick="handleSessionOverlayClick(event)">
+    <div class="session-modal-card">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 18px; border-bottom: 1px solid var(--border);">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">📁</span>
+          <h3 style="font-family: var(--theme-font-title); font-size: 1.1rem; color: var(--text-main);">Pilih Sesi Foto</h3>
+        </div>
+        <button class="btn-close-lightbox" style="width: 32px; height: 32px;" onclick="closeSessionModal()">✕</button>
+      </div>
+      <div style="padding: 14px 18px;">
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 12px; line-height: 1.45;">
+          Ketuk salah satu sesi di bawah ini untuk melihat dan mengunduh seluruh foto momen spesial Anda:
         </p>
-
-        <div class="theme-options-grid">
-          <div class="theme-card-option" data-theme-val="wedding" onclick="selectTheme('wedding')">
-            <div class="theme-option-icon">🌸</div>
-            <div class="theme-option-name">Wedding Blossom</div>
-            <div class="theme-option-desc">Rose Gold &amp; Soft Floral</div>
-          </div>
-
-          <div class="theme-card-option" data-theme-val="gold" onclick="selectTheme('gold')">
-            <div class="theme-option-icon">✨</div>
-            <div class="theme-option-name">Luxury Gold</div>
-            <div class="theme-option-desc">Hitam Pekat &amp; Emas Mewah</div>
-          </div>
-
-          <div class="theme-card-option" data-theme-val="vintage" onclick="selectTheme('vintage')">
-            <div class="theme-option-icon">🎞️</div>
-            <div class="theme-option-name">Vintage Polaroid</div>
-            <div class="theme-option-desc">Retro Sepia &amp; Warm Paper</div>
-          </div>
-
-          <div class="theme-card-option" data-theme-val="modern" onclick="selectTheme('modern')">
-            <div class="theme-option-icon">⚡</div>
-            <div class="theme-option-name">Cyber Neon</div>
-            <div class="theme-option-desc">Dark Minimalist &amp; Neon Violet</div>
-          </div>
-        </div>
-
-        <button class="btn-hero-action btn-hero-primary" style="width: 100%; justify-content: center;"
-          onclick="closeThemeModal()">
-          Terapkan Tema Ini
-        </button>
-      </div>
-    </div>
-
-    <!-- Modal Pilih Sesi Foto Tamu -->
-    <div id="modal-session-picker" class="session-modal-overlay" onclick="handleSessionOverlayClick(event)">
-      <div class="session-modal-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border);">
-          <div style="display: flex; align-items: center; gap: 8px;">
-            <span style="font-size: 1.25rem;">📁</span>
-            <h3 style="font-family: var(--theme-font-title); font-size: 1.15rem; color: var(--text-main);">Pilih Sesi Foto</h3>
-          </div>
-          <button class="btn-close-lightbox" style="width: 32px; height: 32px;" onclick="closeSessionModal()">✕</button>
-        </div>
-        <div style="padding: 16px 20px;">
-          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; line-height: 1.5;">
-            Ketuk salah satu sesi di bawah ini untuk melihat dan mengunduh seluruh foto momen spesial Anda:
-          </p>
-          <div id="session-modal-list" class="session-modal-list">
-            <!-- Injected dynamically -->
-          </div>
+        <div id="session-modal-list" class="session-modal-list">
+          <!-- Injected dynamically -->
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Floating Back to Top Button -->
+  <button id="btn-back-to-top" class="back-to-top-btn" onclick="scrollToTop()" title="Kembali ke Atas">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+    <span>Ke Atas</span>
+  </button>
 
     <!-- ========================================================
-       9. JAVASCRIPT ENGINE
+       9. JAVASCRIPT ENGINE & OFFLINE HYBRID BRIDGE
        ======================================================== -->
+    <script src="hybrid-bridge.js"></script>
     <script>
       // URL Parameters
       const urlParams = new URLSearchParams(window.location.search);
+      const accessParam = urlParams.get('access') || '';
       let currentFolder = urlParams.get('folder') || '';
       let availableFolders = [];
       let lastFoldersFingerprint = '';
@@ -1190,14 +1601,26 @@
       let allPhotos = [];
       let favoriteIds = JSON.parse(localStorage.getItem(`piufoto_fav_${currentFolder}`) || '[]');
       let currentFilter = 'all';
+      let currentSortOrder = localStorage.getItem('piufoto_gallery_sort') || 'asc'; // 'asc' (urut awal jepretan), 'desc' (terbaru dulu)
       let lastFetchedCount = 0;
       let lastRenderedFingerprint = '';
       let currentLightboxIdx = 0;
 
+      // Realtime Cross-Page Synchronization (Instant update when photo is captured in index.html)
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'piufoto_photo_added_event' || e.key === 'piufoto_active_folder') {
+          fetchPhotos();
+          if (!accessParam) fetchFoldersList();
+        }
+      });
+
       // Session Modal Handlers
       function openSessionModal() {
         const modal = document.getElementById('modal-session-picker');
-        if (modal) modal.classList.add('active');
+        if (modal) {
+          modal.classList.add('active');
+          try { history.pushState({ modal: 'session' }, ''); } catch (e) {}
+        }
       }
 
       function closeSessionModal() {
@@ -1213,8 +1636,17 @@
 
       // Fetch All Available Sessions from Backend
       async function fetchFoldersList() {
+        // Jika tamu membuka via link terenkripsi (access token), sembunyikan daftar sesi lain
+        if (accessParam) {
+          const navBar = document.getElementById('session-nav-bar');
+          if (navBar) navBar.style.display = 'none';
+          return;
+        }
+
         try {
           const res = await fetch('/api/folders');
+          if (res.status === 304) return;
+          if (!res.ok) return;
           const data = await res.json();
           if (data && data.folders && data.folders.length > 0) {
             availableFolders = data.folders;
@@ -1380,11 +1812,16 @@
       }
 
       function openThemeModal() {
-        document.getElementById('modal-theme-picker').classList.add('active');
+        const modal = document.getElementById('modal-theme-picker');
+        if (modal) {
+          modal.classList.add('active');
+          try { history.pushState({ modal: 'theme' }, ''); } catch (e) {}
+        }
       }
 
       function closeThemeModal() {
-        document.getElementById('modal-theme-picker').classList.remove('active');
+        const modal = document.getElementById('modal-theme-picker');
+        if (modal) modal.classList.remove('active');
       }
 
       function selectTheme(themeName) {
@@ -1421,11 +1858,30 @@
 
       async function fetchPhotos() {
         try {
-          const res = await fetch(`/api/photos?folder=${encodeURIComponent(currentFolder)}`);
+          const apiUrl = accessParam 
+            ? `/api/photos?access=${encodeURIComponent(accessParam)}`
+            : `/api/photos?folder=${encodeURIComponent(currentFolder)}`;
+
+          const res = await fetch(apiUrl);
+          if (res.status === 304) return;
+          if (!res.ok) return;
           const data = await res.json();
-          if (data.photos) {
-            const isNewAdded = data.photos.length > lastFetchedCount && lastFetchedCount > 0;
-            allPhotos = data.photos;
+          if (data.folder && !currentFolder) {
+            currentFolder = data.folder;
+            initPageMeta();
+          }
+          if (data.theme && !urlParams.get('theme')) {
+            applyTheme(data.theme);
+          }
+          let photoList = null;
+          if (data && Array.isArray(data.photos)) {
+            photoList = data.photos;
+          } else if (Array.isArray(data)) {
+            photoList = data;
+          }
+          if (photoList) {
+            const isNewAdded = photoList.length > lastFetchedCount && lastFetchedCount > 0;
+            allPhotos = photoList;
             lastFetchedCount = allPhotos.length;
 
             document.getElementById('photo-count-badge').innerText = `${allPhotos.length} Foto`;
@@ -1436,7 +1892,7 @@
               document.getElementById('banner-folder-name').innerText = data.displayName;
             }
 
-            const currentFingerprint = allPhotos.map(p => `${p.id || p.name}_${p.timestamp || ''}`).join('|') + `__fav:${favoriteIds.join(',')}_filter:${currentFilter}`;
+            const currentFingerprint = allPhotos.map(p => `${p.id || p.name}_${p.timestamp || ''}`).join('|') + `__fav:${favoriteIds.join(',')}_filter:${currentFilter}_sort:${currentSortOrder}`;
             if (currentFingerprint === lastRenderedFingerprint) {
               return; // Anti-Flicker: tidak ada perubahan data
             }
@@ -1454,14 +1910,60 @@
         }
       }
 
+      function toggleSortOrder() {
+        currentSortOrder = (currentSortOrder === 'asc') ? 'desc' : 'asc';
+        localStorage.setItem('piufoto_gallery_sort', currentSortOrder);
+        updateSortButtonUI();
+        lastRenderedFingerprint = '';
+        renderPhotos();
+      }
+
+      function updateSortButtonUI() {
+        const btnEl = document.getElementById('sort-order-btn');
+        const iconEl = document.getElementById('sort-order-icon');
+        const labelEl = document.getElementById('sort-order-label');
+        if (iconEl && labelEl) {
+          if (currentSortOrder === 'asc') {
+            iconEl.innerText = '⏱️';
+            labelEl.innerText = 'Urut Awal';
+            if (btnEl) btnEl.classList.add('active');
+          } else {
+            iconEl.innerText = '⚡';
+            labelEl.innerText = 'Terbaru';
+            if (btnEl) btnEl.classList.remove('active');
+          }
+        }
+      }
+
+      function getActiveSortedPhotos() {
+        let list = [...allPhotos];
+        if (currentFilter === 'fav') {
+          list = list.filter(p => favoriteIds.includes(p.id || p.name));
+        }
+
+        list.sort((a, b) => {
+          const nameComp = (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' });
+          const timeDiff = (a.timestamp || 0) - (b.timestamp || 0);
+
+          if (currentSortOrder === 'asc') {
+            // Urutan dari foto awal jepretan ke akhir (DSCF0001 -> DSCF0002 -> ...)
+            if (nameComp !== 0) return nameComp;
+            return timeDiff;
+          } else {
+            // Urutan terbaru di atas (DSCF0002 -> DSCF0001 -> ...)
+            if (nameComp !== 0) return -nameComp;
+            return -timeDiff;
+          }
+        });
+
+        return list;
+      }
+
       function renderPhotos() {
         const grid = document.getElementById('photo-grid');
         const emptyState = document.getElementById('empty-state');
 
-        let filtered = allPhotos;
-        if (currentFilter === 'fav') {
-          filtered = allPhotos.filter(p => favoriteIds.includes(p.id || p.name));
-        }
+        const filtered = getActiveSortedPhotos();
 
         if (filtered.length === 0) {
           grid.innerHTML = '';
@@ -1491,6 +1993,7 @@
           const photoId = photo.id || photo.name;
           const isFav = favoriteIds.includes(photoId);
           let card = existingCards.get(photoId);
+          const photoNum = (currentSortOrder === 'asc') ? (idx + 1) : (filtered.length - idx);
 
           if (card) {
             const favBtn = card.querySelector('.card-fav-btn');
@@ -1501,13 +2004,18 @@
                 svgPath.setAttribute('fill', isFav ? '#ff3366' : 'none');
               }
             }
+            const metaText = card.querySelector('.photo-meta-text');
+            if (metaText) {
+              metaText.innerText = `#${photoNum} • ${formatTime(photo.timestamp)}`;
+              metaText.title = photo.name;
+            }
           } else {
             card = document.createElement('div');
             card.className = 'photo-card';
             card.dataset.photoId = photoId;
 
             const isRecent = (Date.now() - (photo.timestamp || 0)) < (1000 * 60 * 10);
-            const newBadgeHtml = (idx < 2 && isRecent) ? `<span class="card-badge-new">Baru</span>` : '';
+            const newBadgeHtml = (currentSortOrder === 'desc' && idx < 2 && isRecent) ? `<span class="card-badge-new">Baru</span>` : '';
 
             card.innerHTML = `
             ${newBadgeHtml}
@@ -1517,10 +2025,10 @@
               </svg>
             </button>
             <div class="photo-card-img-wrap" onclick="openLightboxById('${escapeJs(photoId)}')">
-              <img src="${photo.url}" alt="${photo.name}" loading="lazy">
+              <img src="${photo.url}" alt="${photo.name}" loading="lazy" decoding="async">
             </div>
             <div class="photo-card-bar">
-              <span class="photo-meta-text" title="${photo.name}">#${allPhotos.length - idx} • ${formatTime(photo.timestamp)}</span>
+              <span class="photo-meta-text" title="${photo.name}">#${photoNum} • ${formatTime(photo.timestamp)}</span>
               <div class="photo-card-actions">
                 <a href="${photo.url}" download="${photo.name}" class="btn-card-download" title="Unduh Foto Ini" onclick="event.stopPropagation()">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
@@ -1563,58 +2071,267 @@
         renderPhotos();
       }
 
-      // Lightbox Modal
-      function openLightboxById(photoId) {
-        const idx = allPhotos.findIndex(p => (p.id || p.name) === photoId);
-        if (idx !== -1) {
-          currentLightboxIdx = idx;
-          showLightboxPhoto(allPhotos[idx]);
+      // ========================================================
+      // ADVANCED LIGHTBOX GESTURE & ANIMATION ENGINE
+      // Features:
+      // 1. Pinch to Zoom (Cubit 2 Jari)
+      // 2. Double Tap to Zoom / Reset (Ketuk 2x)
+      // 3. Pan when zoomed (Geser saat zoom)
+      // 4. Swipe Left/Right to Navigate (Geser ganti foto dengan animasi halus)
+      // 5. Swipe Down to Dismiss (Usap ke bawah untuk kembali ke galeri)
+      // 6. History Popstate Protection (Kembali ke galeri tanpa menutup halaman)
+      // 7. Mouse Wheel & Drag for Desktop
+      // ========================================================
+
+      let lightboxRotation = 0;
+      const LightboxState = {
+        scale: 1,
+        minScale: 1,
+        maxScale: 4.5,
+        panX: 0,
+        panY: 0,
+        
+        isDragging: false,
+        isPinching: false,
+        dragMode: 'none', // 'none' | 'pan' | 'swipe-h' | 'swipe-v'
+        
+        startX: 0,
+        startY: 0,
+        startPanX: 0,
+        startPanY: 0,
+        startDistance: 0,
+        startScale: 1,
+        startMidX: 0,
+        startMidY: 0,
+        
+        lastTapTime: 0,
+        lastTapX: 0,
+        lastTapY: 0,
+        
+        hasPushedHistory: false,
+        isClosing: false
+      };
+
+      function updateLightboxTransform(animate = false) {
+        const img = document.getElementById('lightbox-img');
+        if (!img) return;
+        
+        if (animate) {
+          img.classList.remove('dragging');
+          img.classList.add('animating');
+        } else {
+          img.classList.remove('animating');
+          img.classList.add('dragging');
+        }
+        
+        img.style.transform = `translate(${LightboxState.panX}px, ${LightboxState.panY}px) scale(${LightboxState.scale}) rotate(${lightboxRotation}deg)`;
+        updateZoomBadge();
+      }
+
+      function updateZoomBadge() {
+        const pill = document.getElementById('lightbox-zoom-pill');
+        const text = document.getElementById('lightbox-zoom-text');
+        if (!pill || !text) return;
+        
+        if (LightboxState.scale > 1.05) {
+          pill.style.display = 'inline-flex';
+          text.innerText = `${LightboxState.scale.toFixed(1)}x`;
+        } else {
+          pill.style.display = 'none';
         }
       }
 
-      let lightboxRotation = 0;
+      function resetLightboxZoom(animate = true) {
+        LightboxState.scale = 1;
+        LightboxState.panX = 0;
+        LightboxState.panY = 0;
+        updateLightboxTransform(animate);
+      }
 
-      function showLightboxPhoto(photo) {
+      function clampLightboxPan() {
+        const img = document.getElementById('lightbox-img');
+        const vp = document.getElementById('lightbox-viewport');
+        if (!img || !vp) return;
+        
+        if (LightboxState.scale <= 1) {
+          LightboxState.panX = 0;
+          LightboxState.panY = 0;
+          return;
+        }
+        
+        const isRotated90 = (lightboxRotation === 90 || lightboxRotation === 270);
+        const rectW = (isRotated90 ? img.offsetHeight : img.offsetWidth) * LightboxState.scale;
+        const rectH = (isRotated90 ? img.offsetWidth : img.offsetHeight) * LightboxState.scale;
+        const vpW = vp.offsetWidth;
+        const vpH = vp.offsetHeight;
+        
+        const maxPanX = Math.max(0, (rectW - vpW) / 2 + 50);
+        const maxPanY = Math.max(0, (rectH - vpH) / 2 + 50);
+        
+        LightboxState.panX = Math.min(Math.max(LightboxState.panX, -maxPanX), maxPanX);
+        LightboxState.panY = Math.min(Math.max(LightboxState.panY, -maxPanY), maxPanY);
+      }
+
+      function openLightboxById(photoId) {
+        const sortedList = getActiveSortedPhotos();
+        const idx = sortedList.findIndex(p => (p.id || p.name) === photoId);
+        if (idx !== -1) {
+          currentLightboxIdx = idx;
+          showLightboxPhoto(sortedList[idx], 0, true);
+        }
+      }
+
+      function showLightboxPhoto(photo, direction = 0, isOpening = false) {
         if (!photo) return;
-        lightboxRotation = 0;
-        applyLightboxRotation();
-        document.getElementById('lightbox-img').src = photo.url;
-        document.getElementById('lightbox-filename').innerText = photo.name;
-
+        
+        const modal = document.getElementById('lightbox');
+        const img = document.getElementById('lightbox-img');
+        const filenameEl = document.getElementById('lightbox-filename');
         const dlLink = document.getElementById('lightbox-download-link');
+        
+        filenameEl.innerText = photo.name;
         dlLink.href = photo.url;
         dlLink.setAttribute('download', photo.name);
-
-        document.getElementById('lightbox').classList.add('active');
+        
+        // Reset zoom & pan
+        LightboxState.scale = 1;
+        LightboxState.panX = 0;
+        LightboxState.panY = 0;
+        lightboxRotation = 0;
+        modal.style.background = '';
+        
+        // Push state ke browser history agar usap tombol 'Back' HP hanya menutup foto
+        if (!LightboxState.hasPushedHistory) {
+          try {
+            history.pushState({ piufotoLightbox: true }, '');
+            LightboxState.hasPushedHistory = true;
+          } catch (e) {}
+        }
+        
+        if (isOpening || !modal.classList.contains('active')) {
+          // Efek buka foto: pop-in dengan scale & fade halus
+          img.classList.remove('dragging');
+          img.classList.add('animating');
+          img.style.opacity = '0';
+          img.style.transform = `scale(0.85) rotate(0deg)`;
+          img.src = photo.url;
+          
+          modal.classList.add('active');
+          
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              img.style.opacity = '1';
+              img.style.transform = `scale(1) rotate(0deg)`;
+              updateZoomBadge();
+            });
+          });
+        } else if (direction !== 0) {
+          // Efek geser foto: slide keluar lalu slide masuk dengan fluid motion
+          img.classList.remove('dragging');
+          img.classList.add('animating');
+          
+          const outX = direction > 0 ? -90 : 90;
+          img.style.opacity = '0';
+          img.style.transform = `translate(${outX}px, 0px) scale(0.92) rotate(0deg)`;
+          
+          setTimeout(() => {
+            img.src = photo.url;
+            img.classList.remove('animating');
+            const inX = direction > 0 ? 90 : -90;
+            img.style.transform = `translate(${inX}px, 0px) scale(0.92) rotate(0deg)`;
+            img.style.opacity = '0';
+            
+            void img.offsetWidth; // Force reflow
+            
+            img.classList.add('animating');
+            img.style.opacity = '1';
+            img.style.transform = `translate(0px, 0px) scale(1) rotate(0deg)`;
+            updateZoomBadge();
+          }, 160);
+        } else {
+          img.src = photo.url;
+          updateLightboxTransform(true);
+        }
       }
+
+      function closeLightbox(shouldPopHistory = true) {
+        if (LightboxState.isClosing) return;
+        LightboxState.isClosing = true;
+        
+        const modal = document.getElementById('lightbox');
+        const img = document.getElementById('lightbox-img');
+        
+        if (img) {
+          img.classList.remove('dragging');
+          img.classList.add('animating');
+          img.style.opacity = '0';
+          img.style.transform = `scale(0.88) translateY(20px) rotate(${lightboxRotation}deg)`;
+        }
+        
+        modal.style.opacity = '0';
+        modal.style.transition = 'opacity 0.22s ease';
+        
+        setTimeout(() => {
+          modal.classList.remove('active');
+          modal.style.opacity = '';
+          modal.style.transition = '';
+          modal.style.background = '';
+          if (img) {
+            img.style.opacity = '';
+            img.style.transform = '';
+          }
+          resetLightboxZoom(false);
+          LightboxState.isClosing = false;
+        }, 220);
+        
+        // Sinkronisasi history agar halaman tidak terlewat
+        if (shouldPopHistory && LightboxState.hasPushedHistory) {
+          LightboxState.hasPushedHistory = false;
+          try {
+            if (history.state && history.state.piufotoLightbox) {
+              history.back();
+            }
+          } catch (e) {}
+        }
+      }
+
+      // Proteksi Usap/Tombol Back Ponsel: Kembali ke galeri tanpa menutup tab/halaman
+      window.addEventListener('popstate', (e) => {
+        const modal = document.getElementById('lightbox');
+        if (modal && modal.classList.contains('active')) {
+          LightboxState.hasPushedHistory = false;
+          closeLightbox(false); // Tutup foto tanpa memanggil history.back lagi
+          return;
+        }
+        const sessionModal = document.getElementById('modal-session-picker');
+        if (sessionModal && sessionModal.classList.contains('active')) {
+          closeSessionModal();
+          return;
+        }
+        const themeModal = document.getElementById('modal-theme-picker');
+        if (themeModal && themeModal.classList.contains('active')) {
+          closeThemeModal();
+          return;
+        }
+      });
 
       function rotateLightboxPhoto() {
         lightboxRotation = (lightboxRotation + 90) % 360;
-        applyLightboxRotation();
-      }
-
-      function applyLightboxRotation() {
-        const img = document.getElementById('lightbox-img');
-        if (img) {
-          img.style.transform = `rotate(${lightboxRotation}deg)`;
-          img.style.transition = 'transform 0.25s ease';
-        }
-      }
-
-      function closeLightbox() {
-        document.getElementById('lightbox').classList.remove('active');
-        lightboxRotation = 0;
-        applyLightboxRotation();
+        LightboxState.panX = 0;
+        LightboxState.panY = 0;
+        updateLightboxTransform(true);
       }
 
       function navigateLightbox(dir) {
-        if (allPhotos.length === 0) return;
-        currentLightboxIdx = (currentLightboxIdx + dir + allPhotos.length) % allPhotos.length;
-        showLightboxPhoto(allPhotos[currentLightboxIdx]);
+        const sortedList = getActiveSortedPhotos();
+        if (sortedList.length === 0) return;
+        currentLightboxIdx = (currentLightboxIdx + dir + sortedList.length) % sortedList.length;
+        showLightboxPhoto(sortedList[currentLightboxIdx], dir);
       }
 
       async function shareCurrentPhoto() {
-        const currentPhoto = allPhotos[currentLightboxIdx];
+        const sortedList = getActiveSortedPhotos();
+        const currentPhoto = sortedList[currentLightboxIdx] || allPhotos[currentLightboxIdx];
         if (!currentPhoto) return;
         const fullUrl = window.location.origin + currentPhoto.url;
         if (navigator.share) {
@@ -1635,7 +2352,299 @@
         }
       }
 
+      // Inisialisasi Gestur Sentuh Lengkap (Pinch, Double-Tap, Pan, Swipe, Pull-Down)
+      function initLightboxGestures() {
+        const vp = document.getElementById('lightbox-viewport');
+        const img = document.getElementById('lightbox-img');
+        const modal = document.getElementById('lightbox');
+        if (!vp || !img) return;
 
+        let touchStartDist = 0;
+        let touchStartMidX = 0;
+        let touchStartMidY = 0;
+
+        // 1. TOUCH START
+        vp.addEventListener('touchstart', (e) => {
+          if (LightboxState.isClosing) return;
+          
+          if (e.touches.length === 1) {
+            const t = e.touches[0];
+            LightboxState.isDragging = true;
+            LightboxState.startX = t.clientX;
+            LightboxState.startY = t.clientY;
+            LightboxState.startPanX = LightboxState.panX;
+            LightboxState.startPanY = LightboxState.panY;
+            LightboxState.dragMode = 'none';
+
+            // Deteksi Ketuk 2x (Double-Tap)
+            const now = Date.now();
+            const tapDist = Math.hypot(t.clientX - LightboxState.lastTapX, t.clientY - LightboxState.lastTapY);
+            if (now - LightboxState.lastTapTime < 320 && tapDist < 30) {
+              e.preventDefault();
+              LightboxState.lastTapTime = 0;
+              if (LightboxState.scale > 1.1) {
+                // Zoom out kembali ke 1.0x
+                resetLightboxZoom(true);
+              } else {
+                // Zoom in 2.5x terpusat pada titik ketukan
+                const vpRect = vp.getBoundingClientRect();
+                const tapRelX = t.clientX - (vpRect.left + vpRect.width / 2);
+                const tapRelY = t.clientY - (vpRect.top + vpRect.height / 2);
+                
+                LightboxState.scale = 2.5;
+                LightboxState.panX = -tapRelX * 1.5;
+                LightboxState.panY = -tapRelY * 1.5;
+                clampLightboxPan();
+                updateLightboxTransform(true);
+              }
+              return;
+            }
+            LightboxState.lastTapTime = now;
+            LightboxState.lastTapX = t.clientX;
+            LightboxState.lastTapY = t.clientY;
+
+          } else if (e.touches.length === 2) {
+            // Mulai Cubit (Pinch)
+            LightboxState.isPinching = true;
+            LightboxState.isDragging = false;
+            LightboxState.dragMode = 'pinch';
+            
+            const t1 = e.touches[0];
+            const t2 = e.touches[1];
+            touchStartDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+            LightboxState.startScale = LightboxState.scale;
+            LightboxState.startPanX = LightboxState.panX;
+            LightboxState.startPanY = LightboxState.panY;
+            
+            touchStartMidX = (t1.clientX + t2.clientX) / 2;
+            touchStartMidY = (t1.clientY + t2.clientY) / 2;
+          }
+        }, { passive: false });
+
+        // 2. TOUCH MOVE
+        vp.addEventListener('touchmove', (e) => {
+          if (LightboxState.isClosing) return;
+          e.preventDefault(); // Mencegah scrolling browser & gesture back native
+          
+          if (e.touches.length === 2 && LightboxState.isPinching) {
+            // Gerakan Cubit (Pinch to Zoom)
+            const t1 = e.touches[0];
+            const t2 = e.touches[1];
+            const currentDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+            if (touchStartDist > 0) {
+              const pinchRatio = currentDist / touchStartDist;
+              LightboxState.scale = Math.min(Math.max(LightboxState.startScale * pinchRatio, 0.75), 5);
+              
+              const currentMidX = (t1.clientX + t2.clientX) / 2;
+              const currentMidY = (t1.clientY + t2.clientY) / 2;
+              LightboxState.panX = LightboxState.startPanX + (currentMidX - touchStartMidX);
+              LightboxState.panY = LightboxState.startPanY + (currentMidY - touchStartMidY);
+              
+              updateLightboxTransform(false);
+            }
+            return;
+          }
+
+          if (e.touches.length === 1 && LightboxState.isDragging) {
+            const t = e.touches[0];
+            const deltaX = t.clientX - LightboxState.startX;
+            const deltaY = t.clientY - LightboxState.startY;
+
+            // Tentukan arah gestur
+            if (LightboxState.dragMode === 'none') {
+              if (Math.hypot(deltaX, deltaY) > 6) {
+                if (LightboxState.scale > 1.05) {
+                  LightboxState.dragMode = 'pan';
+                } else {
+                  if (deltaY > 15 && Math.abs(deltaY) > Math.abs(deltaX) * 1.1) {
+                    LightboxState.dragMode = 'swipe-v'; // Usap ke bawah kembali
+                  } else if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    LightboxState.dragMode = 'swipe-h'; // Geser foto kiri-kanan
+                  }
+                }
+              }
+            }
+
+            if (LightboxState.dragMode === 'pan') {
+              LightboxState.panX = LightboxState.startPanX + deltaX;
+              LightboxState.panY = LightboxState.startPanY + deltaY;
+              updateLightboxTransform(false);
+            } else if (LightboxState.dragMode === 'swipe-h') {
+              // Foto mengikuti jari secara horizontal
+              LightboxState.panX = deltaX * 0.82;
+              LightboxState.panY = 0;
+              updateLightboxTransform(false);
+            } else if (LightboxState.dragMode === 'swipe-v') {
+              // Usap ke bawah kembali ("pull to dismiss")
+              const pullDown = Math.max(0, deltaY);
+              LightboxState.panY = pullDown;
+              LightboxState.panX = deltaX * 0.25;
+              
+              const dismissScale = Math.max(0.72, 1 - pullDown * 0.00075);
+              const opacity = Math.max(0.2, 0.94 * (1 - pullDown / 480));
+              modal.style.background = `rgba(0, 0, 0, ${opacity})`;
+              
+              img.classList.remove('animating');
+              img.classList.add('dragging');
+              img.style.transform = `translate(${LightboxState.panX}px, ${LightboxState.panY}px) scale(${dismissScale}) rotate(${lightboxRotation}deg)`;
+            }
+          }
+        }, { passive: false });
+
+        // 3. TOUCH END / CANCEL
+        const handleTouchEnd = (e) => {
+          if (LightboxState.isClosing) return;
+
+          if (LightboxState.isPinching) {
+            LightboxState.isPinching = false;
+            touchStartDist = 0;
+            if (LightboxState.scale < 1.05) {
+              resetLightboxZoom(true);
+            } else if (LightboxState.scale > 4) {
+              LightboxState.scale = 4;
+              clampLightboxPan();
+              updateLightboxTransform(true);
+            } else {
+              clampLightboxPan();
+              updateLightboxTransform(true);
+            }
+            return;
+          }
+
+          if (LightboxState.isDragging) {
+            LightboxState.isDragging = false;
+            
+            if (LightboxState.dragMode === 'pan') {
+              clampLightboxPan();
+              updateLightboxTransform(true);
+            } else if (LightboxState.dragMode === 'swipe-h') {
+              const deltaX = LightboxState.panX / 0.82;
+              if (deltaX < -60) {
+                // Geser ke foto berikutnya
+                navigateLightbox(1);
+              } else if (deltaX > 60) {
+                // Geser ke foto sebelumnya
+                navigateLightbox(-1);
+              } else {
+                // Kembali ke posisi tengah
+                LightboxState.panX = 0;
+                updateLightboxTransform(true);
+              }
+            } else if (LightboxState.dragMode === 'swipe-v') {
+              const pullDown = LightboxState.panY;
+              if (pullDown > 85) {
+                // Usap gambar kembali: tutup foto dengan animasi jatuh halus
+                closeLightbox(true);
+              } else {
+                // Batalkan usapan: spring back ke posisi normal
+                modal.style.transition = 'background 0.25s ease';
+                modal.style.background = '';
+                LightboxState.panY = 0;
+                LightboxState.panX = 0;
+                updateLightboxTransform(true);
+                setTimeout(() => { modal.style.transition = ''; }, 250);
+              }
+            }
+            
+            LightboxState.dragMode = 'none';
+          }
+        };
+
+        vp.addEventListener('touchend', handleTouchEnd);
+        vp.addEventListener('touchcancel', handleTouchEnd);
+
+        // 4. DESKTOP MOUSE SUPPORT (Wheel Zoom & Drag Pan/Swipe)
+        vp.addEventListener('wheel', (e) => {
+          e.preventDefault();
+          const zoomFactor = e.deltaY < 0 ? 1.25 : 0.8;
+          const newScale = Math.min(Math.max(LightboxState.scale * zoomFactor, 1), 4.5);
+          
+          if (newScale === 1) {
+            resetLightboxZoom(true);
+          } else {
+            LightboxState.scale = newScale;
+            clampLightboxPan();
+            updateLightboxTransform(true);
+          }
+        }, { passive: false });
+
+        let isMouseDown = false;
+        let mouseStartX = 0;
+        let mouseStartY = 0;
+        let mouseStartPanX = 0;
+        let mouseStartPanY = 0;
+        let mouseDragMode = 'none';
+
+        vp.addEventListener('mousedown', (e) => {
+          if (e.button !== 0 || LightboxState.isClosing) return;
+          isMouseDown = true;
+          mouseStartX = e.clientX;
+          mouseStartY = e.clientY;
+          mouseStartPanX = LightboxState.panX;
+          mouseStartPanY = LightboxState.panY;
+          mouseDragMode = 'none';
+        });
+
+        window.addEventListener('mousemove', (e) => {
+          if (!isMouseDown || !modal.classList.contains('active')) return;
+          const deltaX = e.clientX - mouseStartX;
+          const deltaY = e.clientY - mouseStartY;
+
+          if (mouseDragMode === 'none') {
+            if (Math.hypot(deltaX, deltaY) > 5) {
+              mouseDragMode = LightboxState.scale > 1.05 ? 'pan' : 'swipe';
+            }
+          }
+
+          if (mouseDragMode === 'pan') {
+            LightboxState.panX = mouseStartPanX + deltaX;
+            LightboxState.panY = mouseStartPanY + deltaY;
+            updateLightboxTransform(false);
+          } else if (mouseDragMode === 'swipe') {
+            LightboxState.panX = deltaX * 0.7;
+            updateLightboxTransform(false);
+          }
+        });
+
+        window.addEventListener('mouseup', (e) => {
+          if (!isMouseDown) return;
+          isMouseDown = false;
+          
+          if (mouseDragMode === 'pan') {
+            clampLightboxPan();
+            updateLightboxTransform(true);
+          } else if (mouseDragMode === 'swipe') {
+            const deltaX = LightboxState.panX / 0.7;
+            if (deltaX < -70) {
+              navigateLightbox(1);
+            } else if (deltaX > 70) {
+              navigateLightbox(-1);
+            } else {
+              LightboxState.panX = 0;
+              updateLightboxTransform(true);
+            }
+          }
+          mouseDragMode = 'none';
+        });
+
+        // Double Click Desktop Zoom
+        vp.addEventListener('dblclick', (e) => {
+          if (LightboxState.scale > 1.1) {
+            resetLightboxZoom(true);
+          } else {
+            LightboxState.scale = 2.5;
+            clampLightboxPan();
+            updateLightboxTransform(true);
+          }
+        });
+
+        // Klik area kosong di luar foto untuk menutup
+        vp.addEventListener('click', (e) => {
+          if (e.target === vp) {
+            closeLightbox(true);
+          }
+        });
+      }
 
       // Keyboard navigation
       window.addEventListener('keydown', (e) => {
@@ -1662,16 +2671,122 @@
         return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
       }
 
-      // Auto-poll photos every 2.5 seconds & folder list every 3.5 seconds
+      // Grid View Columns (1 Col vs 2 Col)
+      function setGridColumns(col) {
+        const grid = document.getElementById('photo-grid');
+        const btn2 = document.getElementById('view-mode-2col');
+        const btn1 = document.getElementById('view-mode-1col');
+        
+        if (col === 1) {
+          if (grid) grid.classList.add('view-single');
+          if (btn1) btn1.classList.add('active');
+          if (btn2) btn2.classList.remove('active');
+        } else {
+          if (grid) grid.classList.remove('view-single');
+          if (btn2) btn2.classList.add('active');
+          if (btn1) btn1.classList.remove('active');
+        }
+        localStorage.setItem('piufoto_grid_col', col.toString());
+      }
+
+      // Back to Top Logic
+      function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      window.addEventListener('scroll', () => {
+        const btn = document.getElementById('btn-back-to-top');
+        if (!btn) return;
+        if (window.scrollY > 320) {
+          btn.classList.add('visible');
+        } else {
+          btn.classList.remove('visible');
+        }
+      }, { passive: true });
+
+      // ==========================================
+      // REALTIME PUSH ENGINE: SERVER-SENT EVENTS (SSE)
+      // ==========================================
+      let isSseConnected = false;
+
+      function initRealtimeSSE() {
+        if (!window.EventSource) return;
+        try {
+          const sse = new EventSource('/api/events');
+
+          sse.onopen = () => {
+            isSseConnected = true;
+          };
+
+          sse.onmessage = (e) => {
+            isSseConnected = true;
+            try {
+              const data = JSON.parse(e.data);
+              if (data.type === 'new_photo' || data.type === 'photo_deleted' || data.type === 'photos_updated') {
+                if (!data.folder || data.folder === currentFolder) {
+                  fetchPhotos();
+                }
+              } else if (data.type === 'folders_updated') {
+                if (!accessParam) fetchFoldersList();
+              }
+            } catch (err) {}
+          };
+
+          sse.onerror = () => {
+            isSseConnected = false;
+            // Reconnection handled automatically by browser EventSource
+          };
+        } catch (e) {
+          isSseConnected = false;
+          console.warn("SSE fallback to polling:", e);
+        }
+      }
+
+      // Smart Adaptive Polling:
+      // 1. Hemat data & beban server: Tidak kirim request saat layar HP mati / tab diminimalkan (document.hidden)
+      // 2. Saat SSE aktif: Polling santai setiap 25 detik untuk memastikan data tetap sinkron
+      // 3. Jika SSE terputus / mode offline hybrid: Polling responsif setiap 2.5 detik agar foto jepretan kamera langsung muncul
       setInterval(() => {
-        if (currentFolder) fetchPhotos();
+        if (document.hidden) return;
+        if (!isSseConnected) {
+          fetchPhotos();
+          if (!accessParam) fetchFoldersList();
+        }
       }, 2500);
-      setInterval(fetchFoldersList, 3500);
+
+      setInterval(() => {
+        if (document.hidden) return;
+        if (isSseConnected) {
+          fetchPhotos();
+        }
+      }, 25000);
+
+      // Saat tamu kembali melihat layar galeri di HP mereka, langsung segarkan data
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+          fetchPhotos();
+          if (!accessParam) fetchFoldersList();
+        }
+      });
 
       document.addEventListener('DOMContentLoaded', async () => {
         initPageMeta();
-        await fetchFoldersList();
-        if (currentFolder) {
+        initLightboxGestures();
+        updateSortButtonUI();
+        initRealtimeSSE();
+        
+        // Restore saved grid column layout
+        const savedCol = localStorage.getItem('piufoto_grid_col');
+        if (savedCol) {
+          setGridColumns(parseInt(savedCol, 10));
+        }
+
+        if (accessParam) {
+          const navBar = document.getElementById('session-nav-bar');
+          if (navBar) navBar.style.display = 'none';
+          await fetchPhotos();
+        } else {
+          await fetchFoldersList();
           await fetchPhotos();
         }
       });

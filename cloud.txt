@@ -1,0 +1,9 @@
+CLOUDFLARE TUNNEL (CEPAT, RESMI & TANPA VERIFIKASI):
+
+Jalankan server dan tunnel dengan klik dua kali:
+ðŸ‘‰ start-with-tunnel.bat
+
+Link HTTPS publik (trycloudflare.com) akan langsung muncul di jendela tunnel.
+Buka link tersebut di browser laptop/tablet photobooth Anda. Semua QR Code dan link galeri otomatis tersinkronisasi ke alamat HTTPS tersebut sehingga tamu dapat langsung memindai dan membuka galeri tanpa halaman peringatan/verifikasi.
+
+ukuran frame 1600 × 1200 px	2400 × 1800 px (atau 3200 × 2400 px)	

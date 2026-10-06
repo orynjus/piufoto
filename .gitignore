@@ -2,6 +2,16 @@
 node_modules/
 npm-debug.log*
 
+# Android & Capacitor build artifacts
+android/.gradle/
+android/build/
+android/app/build/
+android/**/build/
+android/app/src/main/assets/public/
+www/
+*.apk
+cloudflared.log
+
 # Local photos storage (keep directory, ignore photo contents)
 gallery-photos/*
 !gallery-photos/.gitkeep
@@ -10,3 +20,4 @@ gallery-photos/*
 .DS_Store
 Thumbs.db
 *.log
+

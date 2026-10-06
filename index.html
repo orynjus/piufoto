@@ -37,6 +37,14 @@
       </div>
 
       <div class="nav-actions">
+        <button id="top-btn-usb-tether" class="btn-action highlight" style="background: rgba(37, 99, 235, 0.2); border-color: rgba(59, 130, 246, 0.5); color: #93c5fd; padding: 6px 12px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px;" title="Klik untuk memindai / menghubungkan kamera USB OTG">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          <span id="top-usb-status-text">📷 Sambung USB Kamera</span>
+        </button>
+
         <span id="gdrive-connection-status" class="status-pill">
           ● Memeriksa Google Drive...
         </span>
@@ -50,6 +58,15 @@
           </svg>
           <span class="btn-qr-label">QR Sesi</span>
         </button>
+
+        <a href="gallery.html" id="btn-nav-gallery" class="btn-action highlight" style="background: rgba(236, 72, 153, 0.2); border-color: rgba(236, 72, 153, 0.5); color: #f472b6; padding: 6px 12px; font-size: 0.82rem; display: inline-flex; align-items: center; gap: 6px; text-decoration: none;" title="Buka Halaman Galeri Foto">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+          <span class="btn-qr-label">🖼️ Galeri</span>
+        </a>
 
         <button id="btn-fullscreen" class="btn-icon" title="Layar Penuh">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -129,6 +146,15 @@
       </div>
 
       <div class="ingest-actions-wrap" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <button id="btn-usb-tether" class="btn-action highlight" style="background: linear-gradient(135deg, #1d4ed8, #2563eb); border-color: #60a5fa; color: #ffffff; font-weight: 700; box-shadow: 0 0 12px rgba(37, 99, 235, 0.4); display: inline-flex; align-items: center; gap: 7px;"
+          title="Hubungkan kamera Nikon D7000 / Fujifilm X-T2 via kabel USB OTG secara realtime">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          <span id="btn-usb-tether-label">⚡ Sambungkan USB Kamera</span>
+        </button>
+
         <button id="btn-toggle-camera-main" class="btn-action highlight-cam"
           title="Nyalakan / Matikan Kamera di Live Preview Utama">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -138,22 +164,24 @@
           <span id="btn-toggle-camera-text">Kamera (Live)</span>
         </button>
 
-        <button id="btn-pick-folder" class="btn-action highlight"
-          title="Pilih folder kamera SLR yang terhubung via OTG">
+        <button id="btn-pick-folder" class="btn-action highlight" type="button"
+          title="Pilih folder kamera SLR dari penyimpanan OTG" style="display: inline-flex; align-items: center; gap: 7px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
           </svg>
-          Pantau Folder Kamera OTG
+          <span id="btn-pick-folder-text">Pantau Folder Kamera OTG</span>
         </button>
 
-        <button id="btn-manual-upload" class="btn-action" title="Pilih foto langsung dari tablet/laptop">
+        <button id="btn-manual-upload" class="btn-action" type="button"
+          title="Pilih foto langsung dari galeri / memori tablet" style="display: inline-flex; align-items: center; gap: 7px;">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
             <polyline points="17 8 12 3 7 8"></polyline>
             <line x1="12" y1="3" x2="12" y2="15"></line>
           </svg>
-          Upload Manual
+          <span>Upload Manual</span>
         </button>
+        <input type="file" id="otg-folder-input" multiple accept="image/*" style="display: none;">
         <input type="file" id="manual-file-input" multiple accept="image/*" style="display: none;">
       </div>
     </div>
@@ -166,6 +194,16 @@
           <div class="section-title">
             <span id="current-session-title">Sesi 01</span>
             <span id="gallery-photo-count" class="photo-counter-tag">0 Foto</span>
+
+            <!-- Tombol Optimasi Ukuran Foto ~300KB -->
+            <button id="btn-optimize-session-photos" class="btn-action"
+              style="padding: 5px 12px; font-size: 0.78rem; display: flex; align-items: center; gap: 6px; border-color: rgba(52, 211, 153, 0.4); color: #34d399;"
+              title="Kompresi dan optimalkan seluruh foto di sesi ini menjadi ~300 KB agar galeri terbuka kilat di HP tamu">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              ⚡ Optimasi ~300KB
+            </button>
 
             <!-- Tombol Rename Sesi -->
             <button id="btn-rename-session" class="btn-action"
@@ -306,9 +344,9 @@
               <span style="color: var(--text-muted); font-weight: 500; white-space: nowrap;">Pas Bingkai:</span>
               <select id="camera-crop-mode-select" class="custom-select"
                 style="padding: 3px 6px; font-size: 0.72rem; flex: 1; border-color: rgba(52, 211, 153, 0.4);">
-                <option value="clean_crop" selected>✂️ Bersih (Potong Bar Hitam & Info)</option>
+                <option value="original" selected>📐 Asli Kamera (Tanpa Crop / Ukuran Penuh)</option>
                 <option value="fill_cover">🖼️ Penuh / Pas Frame (Cover)</option>
-                <option value="original">📐 16:9 Asli (Tanpa Crop)</option>
+                <option value="clean_crop">✂️ Potong Bar OSD (Khusus Live HDMI)</option>
               </select>
             </div>
 
@@ -422,6 +460,11 @@
           <button id="btn-edit-session-drive-link" class="btn-action"
             style="width: 100%; margin-top: 6px; justify-content: center; font-size: 0.78rem; border-color: rgba(66, 133, 244, 0.4); color: #93c5fd;">
             ✏️ Atur Tujuan Link Folder Drive Sesi Ini
+          </button>
+          <button id="btn-sync-online-cloud" class="btn-action"
+            style="width: 100%; margin-top: 6px; justify-content: center; font-size: 0.78rem; border-color: rgba(52, 211, 153, 0.4); color: #34d399;"
+            title="Kirim dan sinkronkan foto di sesi ini ke domain online agar tamu dengan kuota data internet langsung bisa melihat foto">
+            🌐 Sinkronkan Foto Sesi Ini ke Online
           </button>
         </div>
 
@@ -563,19 +606,25 @@
           <button id="btn-close-frame-text-modal" class="btn-icon">✕</button>
         </div>
         <div class="modal-body">
+          <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 8px;">
+            Kosongkan kolom di bawah jika Anda ingin bingkai polos tanpa tulisan:
+          </p>
           <div class="form-group">
             <label for="input-frame-title-live">Judul / Nama Pasangan</label>
-            <input type="text" id="input-frame-title-live" value="Together Forever" placeholder="cth: Sarah & Dimas">
+            <input type="text" id="input-frame-title-live" value="Together Forever" placeholder="cth: Sarah & Dimas (atau kosongkan)">
           </div>
           <div class="form-group">
             <label for="input-frame-subtitle-live">Sub-Judul / Tanggal Acara</label>
             <input type="text" id="input-frame-subtitle-live" value="Sarah & Dimas • 2026"
-              placeholder="cth: Wedding of Sarah & Dimas • 30 September 2026">
+              placeholder="cth: Wedding of Sarah & Dimas (atau kosongkan)">
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer" style="display: flex; gap: 8px; justify-content: flex-end;">
+          <button type="button" class="btn-action" onclick="clearFrameText()" style="padding: 8px 14px; font-size: 0.82rem;" title="Hapus semua tulisan pada frame">
+            🗑️ Kosongkan Teks
+          </button>
           <button id="btn-save-frame-text" class="btn-primary">
-            Simpan & Update Preview
+            ✓ Simpan & Update Frame
           </button>
         </div>
       </div>
@@ -721,6 +770,36 @@
           <div class="form-group">
             <label for="setting-studio-name">Nama Studio Fotografer</label>
             <input type="text" id="setting-studio-name" value="BERKISAHKITA">
+          </div>
+
+          <div class="form-group">
+            <label for="setting-public-domain">🌐 Domain / Link Galeri Online Tamu (Cloudflare / Public URL)</label>
+            <div style="display: flex; gap: 8px;">
+              <input type="url" id="setting-public-domain" value="https://foto.berkisahkita.web.id"
+                placeholder="https://foto.berkisahkita.web.id" style="flex: 1;">
+              <button id="btn-test-public-domain" type="button" class="btn-action"
+                style="white-space: nowrap; padding: 0 14px; font-size: 0.8rem; border-color: rgba(52, 211, 153, 0.5); color: #34d399;">
+                🌐 Cek Online
+              </button>
+            </div>
+            <div id="test-public-domain-feedback"
+              style="display: none; margin-top: 8px; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; line-height: 1.4;">
+            </div>
+            <span class="helper-text">
+              Alamat web ini digunakan pada <strong>QR Code & Standee</strong> agar tamu yang menscan dengan kuota internet ponsel langsung diarahkan ke galeri online resmi Anda. Default: <code>https://foto.berkisahkita.web.id</code>
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="setting-photo-quality">⚡ Ukuran & Kualitas Foto (Kompresi Otomatis)</label>
+            <select id="setting-photo-quality" style="width: 100%; padding: 10px 12px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; color: #f8fafc; font-size: 0.9rem;">
+              <option value="compact_300k" selected>⚡ Sangat Ringan (~300 KB - Rekomendasi Tamu & Galeri Cepat)</option>
+              <option value="standard_800k">📷 Standar (~800 KB - 1 MB)</option>
+              <option value="original_hd">💎 Resolusi Penuh Kamera (2 MB - 4 MB)</option>
+            </select>
+            <span class="helper-text">
+              Opsi <strong>~300 KB</strong> membuat foto terbuka instan di galeri HP tamu tanpa loading lama, hemat kuota seluler & hemat penyimpanan Google Drive. Rasio asli 3:2 tetap utuh murni tanpa crop.
+            </span>
           </div>
         </div>
         <div class="modal-footer">

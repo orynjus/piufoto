@@ -11,6 +11,7 @@ const AppState = {
   activeFolder: 'Sesi_01',
   activeFolderDisplayName: 'Sesi 01',
   activeFolderDriveUrl: '',
+  publicBaseUrl: localStorage.getItem('piufoto_public_base_url') || 'https://foto.berkisahkita.web.id',
   qrTarget: localStorage.getItem('piufoto_qr_target') || 'all', // 'all' | 'gallery' | 'gdrive'
   photos: [],
   
@@ -31,10 +32,13 @@ const AppState = {
   selectedFrame: 'romantic_blossom', // 'romantic_blossom' | 'golden_elegance' | 'vintage_polaroid' | 'custom_png' | 'none'
   frameTitle: 'Together Forever',
   frameSubtitle: 'Sarah & Dimas • 2026',
-  cropMode: 'clean_crop', // 'clean_crop' | 'fill_cover' | 'original'
+  cropMode: (localStorage.getItem('piufoto_crop_mode') === 'clean_crop' ? 'original' : (localStorage.getItem('piufoto_crop_mode') || 'original')), // 'original' | 'fill_cover' | 'clean_crop'
   cameraRotation: parseInt(localStorage.getItem('piufoto_camera_rotation') || '0', 10), // 0, 90, 180, 270
   customPngDataUrl: '',
   customPngImageObj: null,
+  
+  // Compression & Photo Quality Settings
+  photoQuality: localStorage.getItem('piufoto_photo_quality') || 'compact_300k', // 'compact_300k' | 'standard_800k' | 'original_hd'
   
   // Sample Image for Live Frame Preview
   samplePreviewImg: null,
@@ -89,13 +93,19 @@ async function fetchFolders() {
   try {
     const res = await fetch('/api/folders');
     const data = await res.json();
-    if (data.folders) {
-      AppState.folders = data.folders;
+    let folderList = null;
+    if (data && Array.isArray(data.folders)) {
+      folderList = data.folders;
+    } else if (Array.isArray(data)) {
+      folderList = data;
+    }
+    if (folderList) {
+      AppState.folders = folderList;
       if (!AppState.folders.some(f => f.name === AppState.activeFolder) && AppState.folders.length > 0) {
         AppState.activeFolder = AppState.folders[0].name;
       }
       
-      const currentFingerprint = AppState.folders.map(f => `${f.name}_${f.photoCount}_${f.name === AppState.activeFolder}`).join('|');
+      const currentFingerprint = AppState.folders.map(f => `${f.name}_${f.photoCount || f.count || 0}_${f.name === AppState.activeFolder}`).join('|');
       if (currentFingerprint !== AppState.lastRenderedFoldersFingerprint) {
         AppState.lastRenderedFoldersFingerprint = currentFingerprint;
         renderFolderTabs();
@@ -137,6 +147,15 @@ async function switchActiveFolder(folderName) {
   renderFolderTabs();
   updateActiveFolderUI();
   await fetchPhotosForActiveFolder();
+
+  // Beritahu server folder sesi yang aktif agar foto kamera langsung masuk ke sini
+  try {
+    fetch('/api/active-folder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder: folderName })
+    }).catch(() => {});
+  } catch (e) {}
 }
 
 async function updateActiveFolderUI() {
@@ -176,26 +195,38 @@ function updateActiveFolderQR() {
     tabGDrive.style.color = currentTarget === 'gdrive' ? 'white' : 'var(--text-muted)';
   }
 
+  const savedPublicUrl = localStorage.getItem('piufoto_public_base_url');
+  const originUrl = (AppState.publicBaseUrl && !AppState.publicBaseUrl.includes('localhost'))
+    ? AppState.publicBaseUrl
+    : (savedPublicUrl && !savedPublicUrl.includes('localhost') ? savedPublicUrl : 'https://foto.berkisahkita.web.id');
+
   let targetUrl = '';
   if (currentTarget === 'all') {
     // QR Code PERMANEN & STATIS: Menuju portal galeri tanpa parameter folder
-    targetUrl = `${window.location.origin}/gallery.html`;
+    targetUrl = `${originUrl}/gallery.html`;
     if (folderBadge) folderBadge.innerText = '🌐 Semua Sesi (Pilihan Tamu)';
-    if (labelBtn) labelBtn.innerText = '📱 Buka Galeri Tamu di Tab Baru ↗';
-    if (descText) descText.innerHTML = '⭐ <strong>QR Code Statis / Tetap!</strong> Gambar QR Code ini <strong>tidak akan pernah berubah</strong> meskipun Anda mengganti atau membuat sesi baru. Tamu yang menscan akan langsung melihat daftar sesi dan bebas memilih sesi mana yang ingin dilihat atau diunduh.';
+    if (labelBtn) labelBtn.innerText = '📱 Buka Galeri Tamu ↗';
+    if (descText) descText.innerHTML = '⭐ <strong>QR Code Online untuk Tamu!</strong> Tamu yang menscan menggunakan <strong>kuota internet ponsel</strong> akan langsung terhubung ke galeri online dan dapat memilih sesi foto.';
   } else if (currentTarget === 'gallery') {
     let themeParam = 'wedding';
     if (AppState.selectedFrame === 'golden_elegance') themeParam = 'gold';
     if (AppState.selectedFrame === 'vintage_polaroid') themeParam = 'vintage';
     if (AppState.selectedFrame === 'none') themeParam = 'modern';
 
-    targetUrl = `${window.location.origin}/gallery.html?folder=${encodeURIComponent(AppState.activeFolder)}&theme=${encodeURIComponent(themeParam)}`;
+    const currentFolderObj = AppState.folders.find(f => f.name === AppState.activeFolder);
+    const token = currentFolderObj ? currentFolderObj.accessToken : '';
+
+    if (token) {
+      targetUrl = `${originUrl}/gallery.html?access=${encodeURIComponent(token)}`;
+    } else {
+      targetUrl = `${originUrl}/gallery.html?folder=${encodeURIComponent(AppState.activeFolder)}&theme=${encodeURIComponent(themeParam)}`;
+    }
     if (folderBadge) folderBadge.innerText = AppState.activeFolderDisplayName;
     if (labelBtn) labelBtn.innerText = `📱 Buka Galeri ${AppState.activeFolderDisplayName} ↗`;
-    if (descText) descText.innerHTML = `Tamu scan QR ini khusus untuk membuka <strong>${AppState.activeFolderDisplayName}</strong> secara spesifik.`;
+    if (descText) descText.innerHTML = `Tamu scan QR ini dengan kuota internet untuk membuka <strong>${AppState.activeFolderDisplayName}</strong> secara online.`;
   } else {
     const cachedUrl = localStorage.getItem(`gdrive_url_${AppState.activeFolder}`) || AppState.activeFolderDriveUrl;
-    targetUrl = cachedUrl || `${window.location.origin}/gallery.html?folder=${encodeURIComponent(AppState.activeFolder)}`;
+    targetUrl = cachedUrl || `${originUrl}/gallery.html?folder=${encodeURIComponent(AppState.activeFolder)}`;
     if (folderBadge) folderBadge.innerText = `${AppState.activeFolderDisplayName} (Google Drive)`;
     if (labelBtn) labelBtn.innerText = '☁️ Buka Folder di Google Drive ↗';
     if (descText) descText.innerHTML = 'Klien scan QR code ini untuk membuka folder Google Drive dan mengunduh foto yang tersimpan di cloud.';
@@ -204,9 +235,29 @@ function updateActiveFolderQR() {
   const urlEl = document.getElementById('qr-client-url');
   if (urlEl) urlEl.innerText = targetUrl;
   const btnEl = document.getElementById('btn-open-gdrive-folder');
-  if (btnEl) btnEl.href = targetUrl;
+  if (btnEl) {
+    btnEl.href = targetUrl;
+    btnEl.onclick = (e) => {
+      e.preventDefault();
+      // Buka galeri lokal dalam aplikasi tablet
+      window.location.href = `gallery.html?folder=${encodeURIComponent(AppState.activeFolder)}`;
+    };
+  }
 
   renderActiveFolderQRCode(targetUrl);
+}
+
+async function fetchServerInfo() {
+  try {
+    const res = await fetch('/api/info');
+    const data = await res.json();
+    if (data && data.publicBaseUrl && !data.publicBaseUrl.includes('localhost')) {
+      if (AppState.publicBaseUrl !== data.publicBaseUrl) {
+        AppState.publicBaseUrl = data.publicBaseUrl;
+        updateActiveFolderQR();
+      }
+    }
+  } catch(e) {}
 }
 
 async function fetchFolderUrlFromGoogleDrive(folderName) {
@@ -277,6 +328,35 @@ async function createNewFolder() {
 // ==========================================
 // 3. IN-APP SESSION RENAME & DELETION MODALS (100% RELIABLE)
 // ==========================================
+let openModalDepth = 0;
+
+function pushModalState(modalId) {
+  openModalDepth++;
+  try {
+    history.pushState({ isModal: true, modalId: modalId, depth: openModalDepth }, '');
+  } catch (e) {}
+}
+
+function dismissModal(modalEl) {
+  if (typeof modalEl === 'string') modalEl = document.getElementById(modalEl);
+  if (modalEl && modalEl.classList.contains('active')) {
+    modalEl.classList.remove('active');
+    if (openModalDepth > 0) {
+      openModalDepth--;
+      try { history.back(); } catch (e) {}
+    }
+  }
+}
+
+window.addEventListener('popstate', (e) => {
+  const activeOverlays = document.querySelectorAll('.modal-overlay.active');
+  if (activeOverlays.length > 0) {
+    activeOverlays.forEach(overlay => overlay.classList.remove('active'));
+    AppState.pendingDeletePhotoName = '';
+    if (openModalDepth > 0) openModalDepth--;
+  }
+});
+
 function openRenameSessionModal() {
   const currentDisplayName = AppState.activeFolderDisplayName || AppState.activeFolder;
   const oldDisplayEl = document.getElementById('rename-old-name-display');
@@ -293,11 +373,11 @@ function openRenameSessionModal() {
   
   const modal = document.getElementById('modal-rename-session');
   if (modal) modal.classList.add('active');
+  pushModalState('modal-rename-session');
 }
 
 function closeRenameSessionModal() {
-  const modal = document.getElementById('modal-rename-session');
-  if (modal) modal.classList.remove('active');
+  dismissModal('modal-rename-session');
 }
 
 async function executeRenameSession() {
@@ -359,11 +439,13 @@ async function executeRenameSession() {
 
 function openDeleteSessionModal() {
   document.getElementById('delete-session-name-display').innerText = AppState.activeFolderDisplayName;
-  document.getElementById('modal-delete-session-confirm').classList.add('active');
+  const modal = document.getElementById('modal-delete-session-confirm');
+  if (modal) modal.classList.add('active');
+  pushModalState('modal-delete-session-confirm');
 }
 
 function closeDeleteSessionModal() {
-  document.getElementById('modal-delete-session-confirm').classList.remove('active');
+  dismissModal('modal-delete-session-confirm');
 }
 
 async function executeDeleteSession() {
@@ -416,11 +498,11 @@ function openDeletePhotoModal(e, filename) {
   if (nameEl) nameEl.innerText = filename;
   const modal = document.getElementById('modal-delete-photo-confirm');
   if (modal) modal.classList.add('active');
+  pushModalState('modal-delete-photo-confirm');
 }
 
 function closeDeletePhotoModal() {
-  const modal = document.getElementById('modal-delete-photo-confirm');
-  if (modal) modal.classList.remove('active');
+  dismissModal('modal-delete-photo-confirm');
   AppState.pendingDeletePhotoName = '';
 }
 
@@ -553,28 +635,32 @@ function initSamplePreviewImage() {
   img.src = sampleCanvas.toDataURL('image/jpeg', 0.9);
 }
 
-function getCropRect(sourceW, sourceH, targetW, targetH, cropMode = 'clean_crop') {
+function getCropRect(sourceW, sourceH, targetW, targetH, cropMode = 'original') {
   let sx = 0;
   let sy = 0;
   let sw = sourceW;
   let sh = sourceH;
 
-  // If clean_crop and wide video (like 16:9 1920x1080 from Fujifilm HDMI):
-  // Cleanly crop out top black bar (date/battery ~12.5% = 135px on 1080p) and bottom black bar (shutter/ISO ~12.5% = 135px on 1080p)
-  if (cropMode === 'clean_crop' && (sourceW / sourceH) > 1.45) {
+  // Clean HDMI OSD crop: ONLY when user explicitly chooses 'clean_crop' AND input is wide video >= 1.70 (16:9)
+  // Never crop on 3:2 (1.50) or 4:3 (1.33) camera photos!
+  if (cropMode === 'clean_crop' && (sourceW / sourceH) >= 1.70) {
     sy = Math.round(sourceH * 0.125);
     sh = Math.round(sourceH * 0.75);
     sx = Math.round(sourceW * 0.02);
     sw = Math.round(sourceW * 0.96);
-  } else if (cropMode === 'fill_cover') {
-    sx = 0;
-    sy = 0;
-    sw = sourceW;
-    sh = sourceH;
   }
 
-  // Cover-fill scale calculation into target destination rectangle (zero black gaps):
-  const scale = Math.max(targetW / sw, targetH / sh);
+  // Calculate scale:
+  // If 'original': fit without cutting any parts of the image (Math.min)
+  // If targetW/targetH matches sw/sh (e.g. custom_png or full frame), scale is 1:1 exact
+  let scale;
+  if (cropMode === 'original') {
+    scale = Math.min(targetW / sw, targetH / sh);
+  } else {
+    // fill_cover or clean_crop: cover the target area
+    scale = Math.max(targetW / sw, targetH / sh);
+  }
+
   const renderW = sw * scale;
   const renderH = sh * scale;
   const offsetX = (targetW - renderW) / 2;
@@ -583,7 +669,7 @@ function getCropRect(sourceW, sourceH, targetW, targetH, cropMode = 'clean_crop'
   return { sx, sy, sw, sh, offsetX, offsetY, renderW, renderH };
 }
 
-function drawSourceToPhotoBox(ctx, source, srcW, srcH, photoX, photoY, photoW, photoH, rotation = 0, isMirrored = false, cropMode = 'clean_crop') {
+function drawSourceToPhotoBox(ctx, source, srcW, srcH, photoX, photoY, photoW, photoH, rotation = 0, isMirrored = false, cropMode = 'original') {
   ctx.save();
   ctx.beginPath();
   ctx.rect(photoX, photoY, photoW, photoH);
@@ -619,19 +705,28 @@ function drawSourceToPhotoBox(ctx, source, srcW, srcH, photoX, photoY, photoW, p
   ctx.restore();
 }
 
-function renderFramedPhotoToContext(ctx, canvas, source, srcW, srcH, rotation = 0, isMirrored = false, cropMode = 'clean_crop') {
+function renderFramedPhotoToContext(ctx, canvas, source, srcW, srcH, rotation = 0, isMirrored = false, cropMode = 'original', maxDimension = null) {
   const isPortrait = (rotation === 90 || rotation === 270);
-  const targetW = isPortrait ? 1200 : 1600;
-  const targetH = isPortrait ? 1600 : 1200;
+  const orientedW = isPortrait ? srcH : srcW;
+  const orientedH = isPortrait ? srcW : srcH;
+
+  // Preserve exact original image aspect ratio and resolution
+  let targetW = orientedW || (isPortrait ? 1200 : 1600);
+  let targetH = orientedH || (isPortrait ? 1600 : 1200);
+
+  // If maxDimension is set (e.g. 1800px for ~300KB mode), downscale proportionally preserving 3:2 ratio
+  if (maxDimension && (targetW > maxDimension || targetH > maxDimension)) {
+    const scale = maxDimension / Math.max(targetW, targetH);
+    targetW = Math.round(targetW * scale);
+    targetH = Math.round(targetH * scale);
+  }
 
   if (AppState.selectedFrame === 'none') {
-    const finalW = isPortrait ? srcH : srcW;
-    const finalH = isPortrait ? srcW : srcH;
-    if (canvas.width !== finalW || canvas.height !== finalH) {
-      canvas.width = finalW;
-      canvas.height = finalH;
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
     }
-    drawSourceToPhotoBox(ctx, source, srcW, srcH, 0, 0, finalW, finalH, rotation, isMirrored, 'original');
+    drawSourceToPhotoBox(ctx, source, srcW, srcH, 0, 0, targetW, targetH, rotation, isMirrored, 'original');
     return;
   }
 
@@ -641,6 +736,7 @@ function renderFramedPhotoToContext(ctx, canvas, source, srcW, srcH, rotation = 
       canvas.height = targetH;
     }
     ctx.clearRect(0, 0, targetW, targetH);
+    // Draw photo at 100% full original dimensions with zero crop
     drawSourceToPhotoBox(ctx, source, srcW, srcH, 0, 0, targetW, targetH, rotation, isMirrored, cropMode);
     if (AppState.customPngImageObj) {
       ctx.drawImage(AppState.customPngImageObj, 0, 0, targetW, targetH);
@@ -653,10 +749,16 @@ function renderFramedPhotoToContext(ctx, canvas, source, srcW, srcH, rotation = 
     canvas.height = targetH;
   }
 
+  const scaleFactor = targetW / (isPortrait ? 1200 : 1600);
+
   if (AppState.selectedFrame === 'romantic_blossom') {
+    const hasTitle = Boolean(AppState.frameTitle && AppState.frameTitle.trim());
+    const hasSubtitle = Boolean(AppState.frameSubtitle && AppState.frameSubtitle.trim());
+    const hasAnyText = hasTitle || hasSubtitle;
+
     const bTop = Math.round(targetH * (isPortrait ? 0.05 : 0.05));
     const bSide = Math.round(targetW * (isPortrait ? 0.06 : 0.05));
-    const bBottom = Math.round(targetH * (isPortrait ? 0.12 : 0.14));
+    const bBottom = hasAnyText ? Math.round(targetH * (isPortrait ? 0.12 : 0.14)) : bTop;
 
     const photoX = bSide;
     const photoY = bTop;
@@ -670,35 +772,50 @@ function renderFramedPhotoToContext(ctx, canvas, source, srcW, srcH, rotation = 
     ctx.fillRect(0, 0, targetW, targetH);
 
     ctx.strokeStyle = '#e0a8b4';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = Math.max(1, Math.round(4 * scaleFactor));
     ctx.strokeRect(bSide * 0.4, bTop * 0.4, targetW - bSide * 0.8, targetH - bTop * 0.8);
 
     drawSourceToPhotoBox(ctx, source, srcW, srcH, photoX, photoY, photoW, photoH, rotation, isMirrored, cropMode);
 
     ctx.strokeStyle = '#f8bbd0';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = Math.max(1, Math.round(2 * scaleFactor));
     ctx.strokeRect(photoX, photoY, photoW, photoH);
 
-    const textY = photoY + photoH + (bBottom * (isPortrait ? 0.42 : 0.45));
-    ctx.fillStyle = '#a8325a';
-    ctx.textAlign = 'center';
-    ctx.font = `bold ${Math.round(targetW * (isPortrait ? 0.04 : 0.032))}px "Outfit", serif`;
-    ctx.letterSpacing = '3px';
-    ctx.fillText(AppState.frameTitle || 'Together Forever', targetW / 2, textY);
+    if (hasAnyText) {
+      const textY = photoY + photoH + (bBottom * (isPortrait ? 0.42 : 0.45));
+      if (hasTitle) {
+        ctx.fillStyle = '#a8325a';
+        ctx.textAlign = 'center';
+        ctx.font = `bold ${Math.round(targetW * (isPortrait ? 0.04 : 0.032))}px "Outfit", serif`;
+        ctx.letterSpacing = '3px';
+        ctx.fillText(AppState.frameTitle.trim(), targetW / 2, textY);
+      }
 
-    ctx.font = `${Math.round(targetW * (isPortrait ? 0.024 : 0.02))}px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillStyle = '#ff6b95';
-    ctx.fillText('♡  •  ♡', targetW / 2, textY + Math.round(targetW * (isPortrait ? 0.028 : 0.022)));
+      if (hasTitle && hasSubtitle) {
+        ctx.font = `${Math.round(targetW * (isPortrait ? 0.024 : 0.02))}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#ff6b95';
+        ctx.fillText('♡  •  ♡', targetW / 2, textY + Math.round(targetW * (isPortrait ? 0.028 : 0.022)));
+      }
 
-    ctx.font = `500 ${Math.round(targetW * (isPortrait ? 0.022 : 0.018))}px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillStyle = '#7a525d';
-    ctx.fillText(AppState.frameSubtitle || 'Special Moment', targetW / 2, textY + Math.round(targetW * (isPortrait ? 0.058 : 0.048)));
+      if (hasSubtitle) {
+        ctx.font = `500 ${Math.round(targetW * (isPortrait ? 0.022 : 0.018))}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#7a525d';
+        const subY = hasTitle 
+          ? (textY + Math.round(targetW * (isPortrait ? 0.058 : 0.048)))
+          : textY;
+        ctx.fillText(AppState.frameSubtitle.trim(), targetW / 2, subY);
+      }
+    }
     return;
   }
 
   if (AppState.selectedFrame === 'golden_elegance') {
+    const hasTitle = Boolean(AppState.frameTitle && AppState.frameTitle.trim());
+    const hasSubtitle = Boolean(AppState.frameSubtitle && AppState.frameSubtitle.trim());
+    const hasAnyText = hasTitle || hasSubtitle;
+
     const border = Math.round(targetW * (isPortrait ? 0.06 : 0.05));
-    const bottomH = Math.round(targetH * (isPortrait ? 0.11 : 0.13));
+    const bottomH = hasAnyText ? Math.round(targetH * (isPortrait ? 0.11 : 0.13)) : 0;
 
     const photoX = border;
     const photoY = border;
@@ -709,30 +826,43 @@ function renderFramedPhotoToContext(ctx, canvas, source, srcW, srcH, rotation = 
     ctx.fillRect(0, 0, targetW, targetH);
 
     ctx.strokeStyle = '#d4af37';
-    ctx.lineWidth = 4;
+    ctx.lineWidth = Math.max(1, Math.round(4 * scaleFactor));
     ctx.strokeRect(border * 0.4, border * 0.4, targetW - border * 0.8, targetH - border * 0.8);
 
     drawSourceToPhotoBox(ctx, source, srcW, srcH, photoX, photoY, photoW, photoH, rotation, isMirrored, cropMode);
 
     ctx.strokeStyle = '#d4af37';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = Math.max(1, Math.round(2 * scaleFactor));
     ctx.strokeRect(photoX, photoY, photoW, photoH);
 
-    const textY = photoY + photoH + (bottomH * (isPortrait ? 0.50 : 0.52));
-    ctx.fillStyle = '#d4af37';
-    ctx.textAlign = 'center';
-    ctx.font = `bold ${Math.round(targetW * (isPortrait ? 0.038 : 0.03))}px "Outfit", serif`;
-    ctx.letterSpacing = '5px';
-    ctx.fillText((AppState.frameTitle || 'OUR LOVE STORY').toUpperCase(), targetW / 2, textY);
+    if (hasAnyText) {
+      const textY = photoY + photoH + (bottomH * (isPortrait ? 0.50 : 0.52));
+      if (hasTitle) {
+        ctx.fillStyle = '#d4af37';
+        ctx.textAlign = 'center';
+        ctx.font = `bold ${Math.round(targetW * (isPortrait ? 0.038 : 0.03))}px "Outfit", serif`;
+        ctx.letterSpacing = '5px';
+        ctx.fillText(AppState.frameTitle.trim().toUpperCase(), targetW / 2, textY);
+      }
 
-    ctx.font = `500 ${Math.round(targetW * (isPortrait ? 0.022 : 0.018))}px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillStyle = '#9e894f';
-    ctx.letterSpacing = '2px';
-    ctx.fillText(AppState.frameSubtitle || 'MEMORIES FOREVER', targetW / 2, textY + Math.round(targetW * (isPortrait ? 0.042 : 0.035)));
+      if (hasSubtitle) {
+        ctx.font = `500 ${Math.round(targetW * (isPortrait ? 0.022 : 0.018))}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#9e894f';
+        ctx.letterSpacing = '2px';
+        const subY = hasTitle 
+          ? (textY + Math.round(targetW * (isPortrait ? 0.042 : 0.035)))
+          : textY;
+        ctx.fillText(AppState.frameSubtitle.trim(), targetW / 2, subY);
+      }
+    }
     return;
   }
 
   if (AppState.selectedFrame === 'vintage_polaroid') {
+    const hasTitle = Boolean(AppState.frameTitle && AppState.frameTitle.trim());
+    const hasSubtitle = Boolean(AppState.frameSubtitle && AppState.frameSubtitle.trim());
+    const hasAnyText = hasTitle || hasSubtitle;
+
     const bSide = Math.round(targetW * (isPortrait ? 0.06 : 0.05));
     const bTop = Math.round(targetH * (isPortrait ? 0.05 : 0.05));
     const bBottom = Math.round(targetH * (isPortrait ? 0.13 : 0.16));
@@ -748,18 +878,27 @@ function renderFramedPhotoToContext(ctx, canvas, source, srcW, srcH, rotation = 
     drawSourceToPhotoBox(ctx, source, srcW, srcH, photoX, photoY, photoW, photoH, rotation, isMirrored, cropMode);
 
     ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 1;
+    ctx.lineWidth = Math.max(1, Math.round(1 * scaleFactor));
     ctx.strokeRect(photoX, photoY, photoW, photoH);
 
-    const textY = photoY + photoH + (bBottom * (isPortrait ? 0.50 : 0.55));
-    ctx.fillStyle = '#1e293b';
-    ctx.textAlign = 'center';
-    ctx.font = `600 ${Math.round(targetW * (isPortrait ? 0.036 : 0.03))}px "Outfit", cursive`;
-    ctx.fillText(`${AppState.frameTitle || 'Captured Moments'}  ♡`, targetW / 2, textY);
+    if (hasAnyText) {
+      const textY = photoY + photoH + (bBottom * (isPortrait ? 0.50 : 0.55));
+      if (hasTitle) {
+        ctx.fillStyle = '#1e293b';
+        ctx.textAlign = 'center';
+        ctx.font = `600 ${Math.round(targetW * (isPortrait ? 0.036 : 0.03))}px "Outfit", cursive`;
+        ctx.fillText(AppState.frameTitle.trim(), targetW / 2, textY);
+      }
 
-    ctx.font = `400 ${Math.round(targetW * (isPortrait ? 0.022 : 0.018))}px "Plus Jakarta Sans", sans-serif`;
-    ctx.fillStyle = '#64748b';
-    ctx.fillText(AppState.frameSubtitle || new Date().toLocaleDateString('id-ID'), targetW / 2, textY + Math.round(targetW * (isPortrait ? 0.042 : 0.035)));
+      if (hasSubtitle) {
+        ctx.font = `400 ${Math.round(targetW * (isPortrait ? 0.022 : 0.018))}px "Plus Jakarta Sans", sans-serif`;
+        ctx.fillStyle = '#64748b';
+        const subY = hasTitle 
+          ? (textY + Math.round(targetW * (isPortrait ? 0.042 : 0.035)))
+          : textY;
+        ctx.fillText(AppState.frameSubtitle.trim(), targetW / 2, subY);
+      }
+    }
     return;
   }
 }
@@ -784,7 +923,9 @@ function renderLiveFramePreview() {
   if (AppState.selectedFrame === 'none') labelName = 'Tanpa Frame (Polos)';
   
   if (badge) badge.innerText = labelName;
-  if (infoText) infoText.innerText = `"${AppState.frameTitle || 'Together Forever'}"`;
+  if (infoText) {
+    infoText.innerText = (AppState.frameTitle && AppState.frameTitle.trim()) ? `"${AppState.frameTitle}"` : '(Tanpa Teks)';
+  }
   
   const hudFrame = document.getElementById('hud-frame-label');
   if (hudFrame) hudFrame.innerText = labelName;
@@ -792,7 +933,7 @@ function renderLiveFramePreview() {
   renderFramedPhotoToContext(ctx, canvas, rawImg, imgW, imgH, AppState.cameraRotation, false, AppState.cropMode);
 }
 
-async function applyFrameTemplate(source) {
+async function applyFrameTemplate(source, customQualityMode = null) {
   let rawImg;
 
   if (source instanceof HTMLCanvasElement || source instanceof HTMLImageElement) {
@@ -814,8 +955,46 @@ async function applyFrameTemplate(source) {
   const imgW = rawImg.naturalWidth || rawImg.width;
   const imgH = rawImg.naturalHeight || rawImg.height;
 
-  renderFramedPhotoToContext(ctx, canvas, rawImg, imgW, imgH, AppState.cameraRotation, false, AppState.cropMode);
-  return canvas.toDataURL('image/jpeg', 0.94);
+  const qualityMode = customQualityMode || AppState.photoQuality || 'compact_300k';
+
+  let maxDim = null;
+  let targetKb = 0;
+  let baseQuality = 0.94;
+
+  if (qualityMode === 'compact_300k') {
+    maxDim = 1800; // max 1800px on long edge (1800x1200 untuk rasio asli 3:2 tanpa crop)
+    targetKb = 300; // Target ~300 KB (250 KB - 350 KB)
+    baseQuality = 0.80;
+  } else if (qualityMode === 'standard_800k') {
+    maxDim = 2400;
+    targetKb = 850;
+    baseQuality = 0.88;
+  } else {
+    maxDim = null;
+    targetKb = 0;
+    baseQuality = 0.94;
+  }
+
+  renderFramedPhotoToContext(ctx, canvas, rawImg, imgW, imgH, AppState.cameraRotation, false, AppState.cropMode, maxDim);
+
+  if (targetKb <= 0) {
+    return canvas.toDataURL('image/jpeg', baseQuality);
+  }
+
+  // Adaptive quality tuning to land within ~250 KB - 350 KB
+  let curQuality = baseQuality;
+  let dataUrl = canvas.toDataURL('image/jpeg', curQuality);
+  let approxKb = Math.round((dataUrl.length * 3 / 4) / 1024);
+
+  if (approxKb > targetKb + 40) {
+    curQuality = Math.max(0.62, Math.min(baseQuality, (targetKb / approxKb) * curQuality));
+    dataUrl = canvas.toDataURL('image/jpeg', curQuality);
+  } else if (approxKb < targetKb - 80 && curQuality < 0.88) {
+    curQuality = Math.min(0.88, curQuality * 1.1);
+    dataUrl = canvas.toDataURL('image/jpeg', curQuality);
+  }
+
+  return dataUrl;
 }
 
 // ==========================================
@@ -825,14 +1004,23 @@ async function fetchPhotosForActiveFolder() {
   try {
     const res = await fetch(`/api/photos?folder=${encodeURIComponent(AppState.activeFolder)}`);
     const data = await res.json();
-    if (data.photos) {
-      AppState.photos = data.photos;
+    let photoList = null;
+    if (data && Array.isArray(data.photos)) {
+      photoList = data.photos;
+    } else if (Array.isArray(data)) {
+      photoList = data;
+    }
+
+    if (photoList) {
+      AppState.photos = photoList;
       
-      document.getElementById('stat-total-photos').innerText = AppState.photos.length;
-      document.getElementById('gallery-photo-count').innerText = `${AppState.photos.length} Foto`;
+      const statTotal = document.getElementById('stat-total-photos');
+      if (statTotal) statTotal.innerText = AppState.photos.length;
+      const galleryCount = document.getElementById('gallery-photo-count');
+      if (galleryCount) galleryCount.innerText = `${AppState.photos.length} Foto`;
       
-      const currentFingerprint = AppState.photos.map(p => `${p.id}_${p.timestamp}`).join('|');
-      if (currentFingerprint === AppState.lastRenderedPhotosFingerprint) {
+      const currentFingerprint = AppState.photos.map(p => `${p.name || p.id}_${p.timestamp || p.size || 0}`).join('|');
+      if (currentFingerprint === AppState.lastRenderedPhotosFingerprint && AppState.photos.length > 0) {
         return;
       }
       
@@ -841,6 +1029,75 @@ async function fetchPhotosForActiveFolder() {
     }
   } catch (err) {
     console.warn("Gagal fetch photos:", err);
+  }
+}
+
+// Realtime cross-tab storage sync
+window.addEventListener('storage', (e) => {
+  if (e.key === 'piufoto_photo_added_event' || e.key === 'piufoto_active_folder') {
+    AppState.lastRenderedPhotosFingerprint = '';
+    AppState.lastRenderedFoldersFingerprint = '';
+    fetchFolders();
+    fetchPhotosForActiveFolder();
+  }
+});
+
+const processedAutoFrameSet = new Set();
+let isAutoFramingRunning = false;
+
+// Dinonaktifkan: Foto sudah dibingkai langsung saat ingest/upload dengan nama asli (tanpa suffix _framed)
+async function autoFrameRawIncomingPhotos() {
+  return;
+  if (AppState.selectedFrame === 'none' || isAutoFramingRunning) return;
+  if (!AppState.photos || AppState.photos.length === 0) return;
+
+  for (const photo of AppState.photos) {
+    // Foto jepretan kamera Fujifilm (misal: DSCF0001.JPG) yang belum dibingkai
+    const isRaw = /^(DSCF|IMG_|_DSC|FUJI)/i.test(photo.name) && !photo.name.includes('_framed');
+    if (isRaw && !processedAutoFrameSet.has(photo.name)) {
+      processedAutoFrameSet.add(photo.name);
+      isAutoFramingRunning = true;
+
+      try {
+        const actEl = document.getElementById('upload-activity-status');
+        if (actEl) actEl.innerText = `🎨 [AUTO-FRAME] Memasang template bingkai untuk ${photo.name}...`;
+
+        const imgRes = await fetch(photo.url);
+        const blob = await imgRes.blob();
+        const framedBase64 = await applyFrameTemplate(blob);
+        const framedName = photo.name.replace(/\.(jpe?g|png|webp)$/i, '_framed.jpg');
+
+        // Unggah foto yang sudah berbingkai ke server & Google Drive
+        await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image: framedBase64,
+            filename: framedName,
+            folder: AppState.activeFolder,
+            googleDriveWebhook: AppState.googleDriveWebhook,
+            rootFolderName: AppState.googleDriveRootFolder || '',
+            parentFolderId: AppState.googleDriveParentFolderId || '',
+            ext: 'jpg'
+          })
+        });
+
+        // Hapus file mentah agar di galeri hanya tampil foto berbingkai
+        await fetch(`/api/photos?folder=${encodeURIComponent(AppState.activeFolder)}&file=${encodeURIComponent(photo.name)}`, {
+          method: 'DELETE'
+        });
+
+        playUploadSuccessSound();
+        if (actEl) actEl.innerText = `✓ ${framedName} berhasil dibingkai & siap diunduh tamu!`;
+        AppState.lastRenderedPhotosFingerprint = '';
+        await fetchPhotosForActiveFolder();
+      } catch (err) {
+        console.warn("Auto-frame error:", err);
+      } finally {
+        isAutoFramingRunning = false;
+      }
+      break;
+    }
   }
 }
 
@@ -906,30 +1163,75 @@ function renderDashboardGrid() {
 // 6. OTG TETHERING: AUTO-FRAME & UPLOAD TO GOOGLE DRIVE
 // ==========================================
 async function startFolderWatcher() {
-  if (!('showDirectoryPicker' in window)) {
-    alert("Browser ini belum mendukung File System Access API. Silakan gunakan Google Chrome Android / PC, atau gunakan tombol 'Upload Manual'.");
-    return;
-  }
-  
-  try {
-    AppState.directoryHandle = await window.showDirectoryPicker();
-    AppState.isWatchingFolder = true;
-    
-    document.getElementById('otg-tether-status').classList.add('active');
-    document.getElementById('otg-tether-status').innerHTML = '<span>●</span> OTG Memantau & Auto-Upload ke Drive';
-    document.getElementById('btn-pick-folder').innerText = '✓ Folder Kamera Terhubung';
-    
-    await scanFolderForNewImages(true);
-    
-    if (AppState.watchInterval) clearInterval(AppState.watchInterval);
-    AppState.watchInterval = setInterval(() => {
-      scanFolderForNewImages(false);
-    }, 1500);
-    
-  } catch (err) {
-    if (err.name !== 'AbortError') {
-      alert("Gagal memilih folder: " + err.message);
+  const actEl = document.getElementById('upload-activity-status');
+
+  // 1. Jika di PC / Browser yang mendukung File System Access API
+  if ('showDirectoryPicker' in window) {
+    try {
+      AppState.directoryHandle = await window.showDirectoryPicker();
+      AppState.isWatchingFolder = true;
+      
+      const statusEl = document.getElementById('otg-tether-status');
+      if (statusEl) {
+        statusEl.classList.add('active');
+        statusEl.innerHTML = '<span>●</span> OTG Memantau & Auto-Upload';
+      }
+      const btnEl = document.getElementById('btn-pick-folder');
+      if (btnEl) btnEl.innerText = '✓ Folder Kamera Terhubung';
+      
+      await scanFolderForNewImages(true);
+      
+      if (AppState.watchInterval) clearInterval(AppState.watchInterval);
+      AppState.watchInterval = setInterval(() => {
+        scanFolderForNewImages(false);
+      }, 700);
+      return;
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        alert("Gagal memilih folder: " + err.message);
+      }
+      return;
     }
+  }
+
+  // 2. Jika di Android APK (Capacitor Native) - Gunakan Photo / File Picker Sistem Android
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.Camera) {
+    try {
+      if (actEl) actEl.innerText = '📁 Membuka galeri / penyimpanan OTG kamera...';
+      const Camera = window.Capacitor.Plugins.Camera;
+      const result = await Camera.pickImages({
+        quality: 100,
+        limit: 0
+      });
+
+      if (result && result.photos && result.photos.length > 0) {
+        if (actEl) actEl.innerText = `⏳ Memproses ${result.photos.length} foto dari kamera...`;
+        for (let i = 0; i < result.photos.length; i++) {
+          const photo = result.photos[i];
+          if (actEl) actEl.innerText = `⏳ Memasang bingkai (${i + 1}/${result.photos.length})...`;
+          const res = await fetch(photo.webPath);
+          const blob = await res.blob();
+          const filename = `DSC_OTG_${Date.now()}_${i + 1}.JPG`;
+          blob.name = filename;
+          await uploadPhotoWithFrameToGoogleDrive(blob);
+        }
+        if (actEl) actEl.innerText = `✓ Selesai memproses ${result.photos.length} foto!`;
+        return;
+      }
+    } catch (e) {
+      console.warn("Capacitor pickImages note:", e);
+      if (e.message && e.message.includes('User cancelled')) {
+        if (actEl) actEl.innerText = '';
+        return;
+      }
+    }
+  }
+
+  // 3. Fallback: Input file HTML standar
+  const manualInput = document.getElementById('manual-file-input');
+  if (manualInput) {
+    if (actEl) actEl.innerText = '📁 Membuka penyimpanan OTG kamera... Silakan pilih foto jepretan.';
+    manualInput.click();
   }
 }
 
@@ -963,6 +1265,24 @@ async function uploadPhotoWithFrameToGoogleDrive(file) {
 
     const framedBase64 = await applyFrameTemplate(file);
 
+    // Instant optimistic render (0ms delay) so photo appears on screen IMMEDIATELY
+    const newPhotoItem = {
+      id: (AppState.activeFolder || 'Sesi_01') + '/' + file.name,
+      name: file.name,
+      url: framedBase64,
+      size: Math.round(framedBase64.length * 0.75),
+      time: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }),
+      timestamp: Date.now()
+    };
+    AppState.photos = [newPhotoItem, ...AppState.photos.filter(p => p.name !== file.name)];
+    AppState.lastRenderedPhotosFingerprint = '';
+    renderDashboardGrid();
+
+    const statTotalEl = document.getElementById('stat-total-photos');
+    if (statTotalEl) statTotalEl.innerText = AppState.photos.length;
+    const galleryCountEl = document.getElementById('gallery-photo-count');
+    if (galleryCountEl) galleryCountEl.innerText = `${AppState.photos.length} Foto`;
+
     // Forward upload directly to server.js which also uploads to Google Drive with full redirect & CORS immunity
     const uploadRes = await fetch('/api/upload', {
       method: 'POST',
@@ -992,6 +1312,8 @@ async function uploadPhotoWithFrameToGoogleDrive(file) {
           renderActiveFolderQRCode(uploadData.gdrive.folderUrl);
         }
         updateDriveStatusBadge(true);
+      } else if (uploadData.gdrive.status === 'uploading') {
+        document.getElementById('upload-activity-status').innerText = `✓ ${file.name} tersimpan! (Sinkronisasi Drive di latar belakang...)`;
       } else {
         document.getElementById('upload-activity-status').innerText = `⚠ ${file.name} tersimpan di tablet, tapi gagal ke Google Drive!`;
         console.warn("Google Drive upload error:", uploadData.gdrive);
@@ -1001,7 +1323,26 @@ async function uploadPhotoWithFrameToGoogleDrive(file) {
         updateDriveStatusBadge(false, uploadData.gdrive.message);
       }
     } else {
-      document.getElementById('upload-activity-status').innerText = `✓ ${file.name} tersimpan di galeri lokal (Google Drive belum diatur)`;
+      document.getElementById('upload-activity-status').innerText = `✓ ${file.name} tersimpan di galeri lokal!`;
+    }
+
+    // Dual-sync latar belakang: kirim foto ke server online publik agar tamu dengan kuota data internet langsung dapat melihat foto
+    if (AppState.publicBaseUrl && !AppState.publicBaseUrl.includes('localhost')) {
+      const publicUploadUrl = `${AppState.publicBaseUrl.replace(/\/+$/, '')}/api/upload`;
+      fetch(publicUploadUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: framedBase64,
+          filename: file.name,
+          folder: AppState.activeFolder,
+          ext: 'jpg'
+        })
+      }).then(r => r.json()).then(res => {
+        console.log(`🌐 [ONLINE SYNC] Foto ${file.name} berhasil tersinkron ke ${publicUploadUrl}:`, res);
+      }).catch(err => {
+        console.warn(`🌐 [ONLINE SYNC] Catatan background upload: ${err.message}`);
+      });
     }
 
     AppState.lastRenderedPhotosFingerprint = '';
@@ -1013,6 +1354,8 @@ async function uploadPhotoWithFrameToGoogleDrive(file) {
     document.getElementById('upload-activity-status').innerText = `⚠ Gagal upload ${file.name}: ${err.message}`;
   }
 }
+
+window.uploadPhotoWithFrameToGoogleDrive = uploadPhotoWithFrameToGoogleDrive;
 
 // Re-apply active frame to all existing photos in this folder
 async function reframeAllPhotosInActiveFolder() {
@@ -1051,6 +1394,62 @@ async function reframeAllPhotosInActiveFolder() {
   alert("Seluruh foto di sesi ini berhasil diperbarui dengan bingkai baru!");
 }
 
+// Compress and optimize all existing photos in active folder to ~300 KB
+async function optimizeAllPhotosInActiveFolder() {
+  if (!AppState.photos || AppState.photos.length === 0) {
+    alert("Belum ada foto di sesi ini untuk dioptimasi.");
+    return;
+  }
+  
+  const total = AppState.photos.length;
+  const confirmOpt = confirm(
+    `⚡ OPTIMASI UKURAN FOTO (~300 KB)\n\n` +
+    `Optimalkan ${total} foto di "${AppState.activeFolderDisplayName}" menjadi ~300 KB?\n\n` +
+    `• Rasio asli kamera 3:2 tetap terjaga utuh murni tanpa crop\n` +
+    `• Resolusi tajam standar 4R / Full HD (1800x1200 px)\n` +
+    `• Galeri tamu akan terbuka kilat tanpa loading lama di HP!\n` +
+    `• Hemat kuota internet & kapasitas Google Drive.`
+  );
+  if (!confirmOpt) return;
+  
+  const actEl = document.getElementById('upload-activity-status');
+  let successCount = 0;
+  
+  for (let i = 0; i < total; i++) {
+    const photo = AppState.photos[i];
+    if (actEl) actEl.innerText = `⚡ Mengoptimasi foto ${i + 1}/${total} (${photo.name}) ke ~300KB...`;
+    
+    try {
+      const imgRes = await fetch(photo.url);
+      const blob = await imgRes.blob();
+      const optimizedBase64 = await applyFrameTemplate(blob, 'compact_300k');
+      
+      await fetch('/api/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: optimizedBase64,
+          filename: photo.name,
+          folder: AppState.activeFolder,
+          googleDriveWebhook: AppState.googleDriveWebhook,
+          rootFolderName: AppState.googleDriveRootFolder || '',
+          parentFolderId: AppState.googleDriveParentFolderId || '',
+          ext: 'jpg'
+        })
+      });
+      successCount++;
+    } catch(err) {
+      console.warn("Gagal optimasi foto:", photo.name, err);
+    }
+  }
+  
+  if (actEl) actEl.innerText = `✓ Sukses mengoptimalkan ${successCount} foto menjadi ~300KB!`;
+  playUploadSuccessSound();
+  AppState.lastRenderedPhotosFingerprint = '';
+  await fetchPhotosForActiveFolder();
+  alert(`✓ Selesai! Sebanyak ${successCount} foto di "${AppState.activeFolderDisplayName}" berhasil dioptimasi ke ukuran ~300 KB.`);
+}
+
 // ==========================================
 // 7. QR CODE PER FOLDER GENERATION
 // ==========================================
@@ -1081,11 +1480,13 @@ function openQRModal() {
   if (titleEl) {
     titleEl.innerText = AppState.qrTarget === 'all' ? 'Galeri Tamu (Semua Sesi)' : AppState.activeFolderDisplayName;
   }
-  document.getElementById('qr-modal').classList.add('active');
+  const modal = document.getElementById('qr-modal');
+  if (modal) modal.classList.add('active');
+  pushModalState('qr-modal');
 }
 
 function closeQRModal() {
-  document.getElementById('qr-modal').classList.remove('active');
+  dismissModal('qr-modal');
 }
 
 function openStandeeModal() {
@@ -1100,11 +1501,13 @@ function openStandeeModal() {
     if (folderNameEl) folderNameEl.innerText = AppState.activeFolderDisplayName;
     if (folderDescEl) folderDescEl.innerText = `Scan QR Code dengan kamera HP Anda untuk membuka foto ${AppState.activeFolderDisplayName}!`;
   }
-  document.getElementById('standee-modal').classList.add('active');
+  const modal = document.getElementById('standee-modal');
+  if (modal) modal.classList.add('active');
+  pushModalState('standee-modal');
 }
 
 function closeStandeeModal() {
-  document.getElementById('standee-modal').classList.remove('active');
+  dismissModal('standee-modal');
 }
 
 function printStandee() {
@@ -1152,11 +1555,13 @@ function openPhotoViewer(url, name) {
   const dl = document.getElementById('viewer-download-link');
   dl.href = url;
   dl.setAttribute('download', name);
-  document.getElementById('viewer-modal').classList.add('active');
+  const modal = document.getElementById('viewer-modal');
+  if (modal) modal.classList.add('active');
+  pushModalState('viewer-modal');
 }
 
 function closePhotoViewer() {
-  document.getElementById('viewer-modal').classList.remove('active');
+  dismissModal('viewer-modal');
 }
 
 async function rotateCurrentViewerPhoto(degrees = 90) {
@@ -1263,8 +1668,9 @@ async function loadSavedSettings() {
       }
       if (data.googleDriveParentFolderId) AppState.googleDriveParentFolderId = data.googleDriveParentFolderId;
       if (data.selectedFrame) AppState.selectedFrame = data.selectedFrame;
-      if (data.frameTitle) AppState.frameTitle = data.frameTitle;
-      if (data.frameSubtitle) AppState.frameSubtitle = data.frameSubtitle;
+      if (data.frameTitle !== undefined) AppState.frameTitle = data.frameTitle;
+      if (data.frameSubtitle !== undefined) AppState.frameSubtitle = data.frameSubtitle;
+      if (data.photoQuality) AppState.photoQuality = data.photoQuality;
       if (data.customPngDataUrl) {
         AppState.customPngDataUrl = data.customPngDataUrl;
         loadCustomPngImage(data.customPngDataUrl);
@@ -1288,6 +1694,14 @@ async function loadSavedSettings() {
   if (rootInput) rootInput.value = AppState.googleDriveRootFolder || '';
   const parentInput = document.getElementById('setting-parent-folder-id');
   if (parentInput) parentInput.value = AppState.googleDriveParentFolderId || '';
+
+  const qualitySelect = document.getElementById('setting-photo-quality');
+  if (qualitySelect) qualitySelect.value = AppState.photoQuality || 'compact_300k';
+
+  const publicDomainInput = document.getElementById('setting-public-domain');
+  if (publicDomainInput) {
+    publicDomainInput.value = AppState.publicBaseUrl || localStorage.getItem('piufoto_public_base_url') || 'https://foto.berkisahkita.web.id';
+  }
 
   document.getElementById('input-frame-title-live').value = AppState.frameTitle;
   document.getElementById('input-frame-subtitle-live').value = AppState.frameSubtitle;
@@ -1411,6 +1825,161 @@ async function testWebhookConnection() {
   }
 }
 
+async function testPublicDomainConnection() {
+  const domainInput = document.getElementById('setting-public-domain');
+  const feedback = document.getElementById('test-public-domain-feedback');
+  const btnTest = document.getElementById('btn-test-public-domain');
+
+  let targetUrl = domainInput ? domainInput.value.trim() : '';
+  if (!targetUrl) {
+    targetUrl = 'https://foto.berkisahkita.web.id';
+    if (domainInput) domainInput.value = targetUrl;
+  }
+  if (!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://')) {
+    targetUrl = 'https://' + targetUrl;
+    if (domainInput) domainInput.value = targetUrl;
+  }
+  targetUrl = targetUrl.replace(/\/+$/, '');
+
+  if (btnTest) {
+    btnTest.disabled = true;
+    btnTest.innerText = '⏳ Cek...';
+  }
+  if (feedback) {
+    feedback.style.display = 'block';
+    feedback.style.background = 'rgba(59, 130, 246, 0.15)';
+    feedback.style.border = '1px solid #3b82f6';
+    feedback.style.color = '#93c5fd';
+    feedback.innerHTML = `📡 Menghubungi domain online: <code>${targetUrl}</code>...`;
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    const res = await fetch(`${targetUrl}/api/folders`, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (res.ok) {
+      if (feedback) {
+        feedback.style.background = 'rgba(16, 185, 129, 0.15)';
+        feedback.style.border = '1px solid #10b981';
+        feedback.style.color = '#6ee7b7';
+        feedback.innerHTML = `✅ <strong>Domain Online Aktif & Terhubung!</strong><br>Server online siap diakses. Tamu yang menscan QR code dengan kuota internet ponsel akan langsung membuka galeri di <code>${targetUrl}</code>.`;
+      }
+      AppState.publicBaseUrl = targetUrl;
+      localStorage.setItem('piufoto_public_base_url', targetUrl);
+      updateActiveFolderQR();
+    } else {
+      if (feedback) {
+        feedback.style.background = 'rgba(239, 68, 68, 0.15)';
+        feedback.style.border = '1px solid #ef4444';
+        feedback.style.color = '#fca5a5';
+        feedback.innerHTML = `❌ <strong>Server Online Mengembalikan Status ${res.status}:</strong><br>Pastikan server lokal/Cloudflare Tunnel berjalan.`;
+      }
+    }
+  } catch (err) {
+    if (feedback) {
+      feedback.style.background = 'rgba(239, 68, 68, 0.15)';
+      feedback.style.border = '1px solid #ef4444';
+      feedback.style.color = '#fca5a5';
+      feedback.innerHTML = `❌ <strong>Gagal Terhubung ke Domain Online:</strong><br>${err.name === 'AbortError' ? 'Waktu koneksi habis (timeout > 6s)' : err.message}<br><br><small>Tips: Pastikan tunnel berjalan (klik <code>start-with-tunnel.bat</code> di laptop) dan tablet terhubung ke jaringan internet/hotspot.</small>`;
+    }
+  } finally {
+    if (btnTest) {
+      btnTest.disabled = false;
+      btnTest.innerText = '🌐 Cek Online';
+    }
+  }
+}
+
+async function syncSessionPhotosToOnline() {
+  const targetUrl = AppState.publicBaseUrl || localStorage.getItem('piufoto_public_base_url') || 'https://foto.berkisahkita.web.id';
+  const folderName = AppState.activeFolder || 'Sesi_01';
+  const displayName = AppState.activeFolderDisplayName || folderName;
+
+  if (!AppState.photos || AppState.photos.length === 0) {
+    alert(`Belum ada foto di sesi "${displayName}" untuk disinkronkan ke online.`);
+    return;
+  }
+
+  const btnSync = document.getElementById('btn-sync-online-cloud');
+  const actEl = document.getElementById('upload-activity-status');
+
+  const confirmSync = confirm(
+    `Sinkronkan ${AppState.photos.length} foto dari sesi "${displayName}" ke server online?\n\n` +
+    `Domain tujuan: ${targetUrl}\n` +
+    `Setelah sinkronisasi, tamu yang menscan QR Code dengan kuota data internet akan langsung melihat semua foto ini.`
+  );
+  if (!confirmSync) return;
+
+  if (btnSync) {
+    btnSync.disabled = true;
+    btnSync.innerText = '⏳ Menyinkronkan...';
+  }
+
+  let successCount = 0;
+  let failCount = 0;
+
+  for (let i = 0; i < AppState.photos.length; i++) {
+    const photo = AppState.photos[i];
+    const currentNum = i + 1;
+    if (actEl) actEl.innerText = `🌐 [SYNC ONLINE] Mengunggah (${currentNum}/${AppState.photos.length}): ${photo.name}...`;
+
+    try {
+      let imgData = photo.url;
+      if (!imgData.startsWith('data:image')) {
+        const res = await fetch(photo.url);
+        const blob = await res.blob();
+        imgData = await new Promise(r => {
+          const fr = new FileReader();
+          fr.onload = () => r(fr.result);
+          fr.readAsDataURL(blob);
+        });
+      }
+
+      const res = await fetch(`${targetUrl.replace(/\/+$/, '')}/api/upload`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: imgData,
+          filename: photo.name,
+          folder: folderName,
+          ext: 'jpg'
+        })
+      });
+
+      if (res.ok) {
+        successCount++;
+      } else {
+        failCount++;
+      }
+    } catch (err) {
+      console.warn(`Sync photo ${photo.name} failed:`, err);
+      failCount++;
+    }
+  }
+
+  if (btnSync) {
+    btnSync.disabled = false;
+    btnSync.innerText = '🌐 Sinkronkan Foto Sesi Ini ke Online';
+  }
+
+  if (actEl) {
+    actEl.innerText = `✓ Selesai! ${successCount} foto sesi "${displayName}" berhasil tersinkron ke online!`;
+  }
+  playUploadSuccessSound();
+
+  let msg = `✅ Selesai Sinkronisasi Online!\n\n` +
+    `• Berhasil: ${successCount} foto\n` +
+    (failCount > 0 ? `• Gagal: ${failCount} foto (cek koneksi internet)\n` : '') +
+    `\nTamu yang menscan QR code sekarang dapat langsung melihat foto di:\n${targetUrl}/gallery.html?folder=${encodeURIComponent(folderName)}`;
+  alert(msg);
+}
+
 function saveSettings() {
   AppState.studioName = document.getElementById('setting-studio-name').value.trim() || 'BERKISAHKITA';
   AppState.googleDriveWebhook = document.getElementById('setting-webhook').value.trim();
@@ -1419,6 +1988,23 @@ function saveSettings() {
   const parentInput = document.getElementById('setting-parent-folder-id');
   if (parentInput) AppState.googleDriveParentFolderId = parentInput.value.trim();
   
+  const qualitySelect = document.getElementById('setting-photo-quality');
+  if (qualitySelect) {
+    AppState.photoQuality = qualitySelect.value;
+    localStorage.setItem('piufoto_photo_quality', AppState.photoQuality);
+  }
+
+  const publicDomainInput = document.getElementById('setting-public-domain');
+  if (publicDomainInput) {
+    let pUrl = publicDomainInput.value.trim();
+    if (!pUrl) pUrl = 'https://foto.berkisahkita.web.id';
+    if (!pUrl.startsWith('http://') && !pUrl.startsWith('https://')) pUrl = 'https://' + pUrl;
+    pUrl = pUrl.replace(/\/+$/, '');
+    AppState.publicBaseUrl = pUrl;
+    localStorage.setItem('piufoto_public_base_url', pUrl);
+    updateActiveFolderQR();
+  }
+
   localStorage.setItem('piufoto_settings', JSON.stringify({
     studioName: AppState.studioName,
     googleDriveWebhook: AppState.googleDriveWebhook,
@@ -1427,12 +2013,27 @@ function saveSettings() {
     selectedFrame: AppState.selectedFrame,
     frameTitle: AppState.frameTitle,
     frameSubtitle: AppState.frameSubtitle,
-    customPngDataUrl: AppState.customPngDataUrl
+    customPngDataUrl: AppState.customPngDataUrl,
+    photoQuality: AppState.photoQuality,
+    publicBaseUrl: AppState.publicBaseUrl
   }));
   
   document.getElementById('standee-studio-name').innerText = AppState.studioName;
   updateDriveStatusBadge();
   closeSettingsModal();
+
+  // Sinkronkan webhook Google Drive ke backend server
+  try {
+    fetch('/api/settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        googleDriveWebhook: AppState.googleDriveWebhook,
+        rootFolderName: AppState.googleDriveRootFolder,
+        parentFolderId: AppState.googleDriveParentFolderId
+      })
+    }).catch(() => {});
+  } catch (e) {}
   
   if (AppState.googleDriveWebhook) {
     fetchFolderUrlFromGoogleDrive(AppState.activeFolder);
@@ -1441,22 +2042,35 @@ function saveSettings() {
 
 // Custom PNG Modal handlers
 function openCustomFrameModal() {
-  document.getElementById('modal-custom-frame').classList.add('active');
+  const modal = document.getElementById('modal-custom-frame');
+  if (modal) modal.classList.add('active');
+  pushModalState('modal-custom-frame');
 }
 
 function closeCustomFrameModal() {
-  document.getElementById('modal-custom-frame').classList.remove('active');
+  dismissModal('modal-custom-frame');
 }
 
 function openFrameTextModal() {
   document.getElementById('input-frame-title-live').value = AppState.frameTitle;
   document.getElementById('input-frame-subtitle-live').value = AppState.frameSubtitle;
-  document.getElementById('modal-edit-frame-text').classList.add('active');
+  const modal = document.getElementById('modal-edit-frame-text');
+  if (modal) modal.classList.add('active');
+  pushModalState('modal-edit-frame-text');
 }
 
 function closeFrameTextModal() {
-  document.getElementById('modal-edit-frame-text').classList.remove('active');
+  dismissModal('modal-edit-frame-text');
 }
+
+function clearFrameText() {
+  const titleInput = document.getElementById('input-frame-title-live');
+  const subInput = document.getElementById('input-frame-subtitle-live');
+  if (titleInput) titleInput.value = '';
+  if (subInput) subInput.value = '';
+  saveFrameText();
+}
+window.clearFrameText = clearFrameText;
 
 function saveFrameText() {
   AppState.frameTitle = document.getElementById('input-frame-title-live').value.trim();
@@ -1467,11 +2081,59 @@ function saveFrameText() {
 }
 
 function openSettingsModal() {
-  document.getElementById('settings-modal').classList.add('active');
+  const modal = document.getElementById('settings-modal');
+  if (modal) modal.classList.add('active');
+  pushModalState('settings-modal');
 }
 
 function closeSettingsModal() {
-  document.getElementById('settings-modal').classList.remove('active');
+  dismissModal('settings-modal');
+}
+
+// ==========================================
+// REALTIME PUSH ENGINE: SERVER-SENT EVENTS (SSE)
+// ==========================================
+function initDashboardSSE() {
+  if (!window.EventSource) return;
+  try {
+    const sse = new EventSource('/api/events');
+    sse.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.type === 'new_photo') {
+          if (!data.folder || data.folder === AppState.activeFolder) {
+            fetchPhotosForActiveFolder();
+          }
+          fetchFolders();
+        } else if (data.type === 'photo_deleted') {
+          if (!data.folder || data.folder === AppState.activeFolder) {
+            fetchPhotosForActiveFolder();
+          }
+          fetchFolders();
+        } else if (data.type === 'folders_updated') {
+          fetchFolders();
+        } else if (data.type === 'gdrive_synced') {
+          if (data.ok && data.folderUrl) {
+            AppState.activeFolderDriveUrl = data.folderUrl;
+            localStorage.setItem(`gdrive_url_${data.folder}`, data.folderUrl);
+            if (data.folder === AppState.activeFolder) {
+              const actEl = document.getElementById('upload-activity-status');
+              if (actEl) actEl.innerText = `✓ ${data.filename || 'Foto'} berhasil tersimpan di Google Drive!`;
+              document.getElementById('qr-client-url').innerText = data.folderUrl;
+              document.getElementById('btn-open-gdrive-folder').href = data.folderUrl;
+              renderActiveFolderQRCode(data.folderUrl);
+              updateDriveStatusBadge(true);
+            }
+          } else if (!data.ok) {
+            updateDriveStatusBadge(false, data.message);
+          }
+        }
+      } catch (err) {}
+    };
+    sse.onerror = () => {
+      // Reconnect automatically handled by EventSource
+    };
+  } catch(e) {}
 }
 
 // ==========================================
@@ -1480,13 +2142,16 @@ function closeSettingsModal() {
 document.addEventListener('DOMContentLoaded', async () => {
   initSamplePreviewImage();
   await loadSavedSettings();
+  await fetchServerInfo();
   await fetchFolders();
   await fetchPhotosForActiveFolder();
+  initDashboardSSE();
   
   setInterval(() => {
     fetchPhotosForActiveFolder();
     fetchFolders();
-  }, 2000);
+    fetchServerInfo();
+  }, 3000);
   
   // Real-time Frame Selector Buttons
   document.querySelectorAll('.frame-pill-btn').forEach(btn => {
@@ -1548,6 +2213,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-save-frame-text').addEventListener('click', saveFrameText);
   document.getElementById('btn-reframe-all-photos').addEventListener('click', reframeAllPhotosInActiveFolder);
   
+  const btnOptimizeSession = document.getElementById('btn-optimize-session-photos');
+  if (btnOptimizeSession) btnOptimizeSession.addEventListener('click', optimizeAllPhotosInActiveFolder);
+  
   // Session Renaming
   const btnRenameSession = document.getElementById('btn-rename-session');
   if (btnRenameSession) btnRenameSession.addEventListener('click', openRenameSessionModal);
@@ -1601,19 +2269,78 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Create New Folder
   document.getElementById('btn-create-folder').addEventListener('click', createNewFolder);
   
-  // Folder Watcher Trigger (OTG Tethering)
-  document.getElementById('btn-pick-folder').addEventListener('click', startFolderWatcher);
-  
-  // Manual File Upload Fallback
-  const fileInput = document.getElementById('manual-file-input');
-  document.getElementById('btn-manual-upload').addEventListener('click', () => fileInput.click());
-  fileInput.addEventListener('change', async (e) => {
-    const files = Array.from(e.target.files);
-    for (const f of files) {
+  // Batch File Ingestion (OTG & Manual Upload)
+  async function processBatchSelectedFiles(filesList) {
+    const files = Array.from(filesList || []);
+    if (!files.length) return;
+    const actEl = document.getElementById('upload-activity-status');
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      if (actEl) actEl.innerText = `⏳ Memasang bingkai (${i + 1}/${files.length}): ${f.name}...`;
       await uploadPhotoWithFrameToGoogleDrive(f);
     }
-    fileInput.value = '';
-  });
+    if (actEl) actEl.innerText = `✓ Selesai memproses ${files.length} foto!`;
+  }
+
+  const manualFileInput = document.getElementById('manual-file-input');
+  if (manualFileInput) {
+    manualFileInput.addEventListener('change', async (e) => {
+      await processBatchSelectedFiles(e.target.files);
+      manualFileInput.value = '';
+    });
+  }
+
+  const otgFolderInput = document.getElementById('otg-folder-input');
+  if (otgFolderInput) {
+    otgFolderInput.addEventListener('change', async (e) => {
+      await processBatchSelectedFiles(e.target.files);
+      otgFolderInput.value = '';
+    });
+  }
+
+  // Trigger Pantau Folder Kamera OTG
+  const pickFolderBtn = document.getElementById('btn-pick-folder');
+  if (pickFolderBtn) {
+    pickFolderBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      // 1. Android APK: Coba Native SAF Folder Picker atau Photo Picker
+      if (typeof window.pickNativeFolder === 'function') {
+        const handled = await window.pickNativeFolder();
+        if (handled) return;
+      }
+      if (typeof window.pickNativePhotos === 'function') {
+        const handled = await window.pickNativePhotos();
+        if (handled) return;
+      }
+
+      // 2. Desktop Chrome: File System Access API
+      if ('showDirectoryPicker' in window) {
+        await startFolderWatcher();
+        return;
+      }
+
+      // 3. Fallback: input file
+      const otgInput = document.getElementById('otg-folder-input');
+      if (otgInput) otgInput.click();
+    });
+  }
+
+  // Trigger Upload Manual
+  const manualUploadBtn = document.getElementById('btn-manual-upload');
+  if (manualUploadBtn) {
+    manualUploadBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      // 1. Android APK: Panggil Native Photo Picker
+      if (typeof window.pickNativePhotos === 'function') {
+        const handled = await window.pickNativePhotos();
+        if (handled) return;
+      }
+
+      // 2. Fallback: input file
+      const manualInput = document.getElementById('manual-file-input');
+      if (manualInput) manualInput.click();
+    });
+  }
   
   // Modals
   document.getElementById('btn-open-qr').addEventListener('click', openQRModal);
@@ -1655,6 +2382,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('btn-save-settings').addEventListener('click', saveSettings);
   const btnTestWebhook = document.getElementById('btn-test-webhook');
   if (btnTestWebhook) btnTestWebhook.addEventListener('click', testWebhookConnection);
+
+  const btnTestPublicDomain = document.getElementById('btn-test-public-domain');
+  if (btnTestPublicDomain) btnTestPublicDomain.addEventListener('click', testPublicDomainConnection);
+
+  const btnSyncOnlineCloud = document.getElementById('btn-sync-online-cloud');
+  if (btnSyncOnlineCloud) btnSyncOnlineCloud.addEventListener('click', syncSessionPhotosToOnline);
   
   // Fullscreen
   document.getElementById('btn-fullscreen').addEventListener('click', () => {
@@ -1725,11 +2458,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const cropModeSelect = document.getElementById('camera-crop-mode-select');
   if (cropModeSelect) {
-    const savedCrop = localStorage.getItem('piufoto_crop_mode');
-    if (savedCrop) {
-      AppState.cropMode = savedCrop;
-      cropModeSelect.value = savedCrop;
+    let savedCrop = localStorage.getItem('piufoto_crop_mode');
+    if (!savedCrop || savedCrop === 'clean_crop') {
+      savedCrop = 'original';
+      localStorage.setItem('piufoto_crop_mode', 'original');
     }
+    AppState.cropMode = savedCrop;
+    cropModeSelect.value = savedCrop;
     cropModeSelect.addEventListener('change', (e) => {
       AppState.cropMode = e.target.value;
       localStorage.setItem('piufoto_crop_mode', e.target.value);
@@ -2315,6 +3050,8 @@ async function executeUnifiedSnap(triggerSource = 'manual', delayMs = null) {
         document.getElementById('btn-open-gdrive-folder').href = uploadData.gdrive.folderUrl;
         renderActiveFolderQRCode(uploadData.gdrive.folderUrl);
       }
+    } else if (uploadData.gdrive && uploadData.gdrive.status === 'uploading') {
+      document.getElementById('upload-activity-status').innerText = `✓ ${filename} tersimpan! (Sinkronisasi Drive di latar belakang...)`;
     } else {
       document.getElementById('upload-activity-status').innerText = `✓ ${filename} tersimpan di galeri lokal!`;
     }

@@ -134,3 +134,54 @@ Aplikasi menyediakan 3 mode QR Code yang sangat fleksibel:
 
 - Tekan tombol **"🖨️ Cetak Standee"** untuk mencetak kartu meja estetik ber-QR Code untuk ditaruh di meja photobooth / resepsi klien.
 
+---
+
+## 🌐 4. Panduan Menghubungkan Local ke Tunnel (Akses Publik / Tamu)
+
+Secara bawaan (*default*), Piufoto berjalan di `http://localhost:3000` atau IP lokal Wi-Fi (misal `http://192.168.1.5:3000`). Agar tamu dapat memindai QR Code menggunakan **koneksi paket data 4G/5G masing-masing** (tanpa harus tersambung ke Wi-Fi photobooth yang sama), gunakan fitur **Tunneling**.
+
+### ⚡ Cara Termudah: Cloudflare Tunnel (Gratis, Cepat, Tanpa Akun)
+Aplikasi `cloudflared` sudah terpasang di sistem Anda.
+
+1. **Jalankan Otomatis via Batch File:**
+   - Cukup klik dua kali file **`start-with-tunnel.bat`** di folder project.
+   - Script akan otomatis menyalakan local server dan membuat tunnel.
+
+2. **Atau Jalankan Manual via Terminal:**
+   - **Terminal 1:** Jalankan server:
+     ```bash
+     npm start
+     ```
+   - **Terminal 2:** Jalankan tunnel:
+     ```bash
+     npm run tunnel
+     # atau: cloudflared tunnel --config nul --url http://localhost:3000
+     ```
+
+3. **Cara Pakai di Lokasi Acara:**
+   - Di Terminal 2, cari baris URL HTTPS, misalnya:
+     `https://your-temporary-name.trycloudflare.com`
+   - Buka URL tersebut di browser laptop/tablet photobooth.
+   - **Selesai!** Seluruh QR Code di layar monitor dan Standee Meja akan otomatis menggunakan alamat HTTPS publik tersebut. Tamu bisa langsung scan dan download foto dari smartphone mereka kapan saja!
+
+### 💡 Alternatif Tunnel Lainnya (Opsional)
+- **Localtunnel:** `npx localtunnel --port 3000`
+- **Ngrok:** `ngrok http 3000`
+
+---
+
+## 📱 Mode 100% Bebas Laptop: Menggunakan Termux di Tablet Android
+
+Jika Anda ingin menjalankan server dan Cloudflare Tunnel langsung di dalam tablet Android tanpa membawa laptop ke lokasi acara:
+
+1. **Install Termux:** Unduh APK Termux dari [F-Droid](https://f-droid.org/repo/com.termux_1020.apk).
+2. **Ketik di Termux:**
+   ```bash
+   pkg update -y && pkg install -y git nodejs
+   git clone https://github.com/orynjus/piufoto.git
+   cd piufoto
+   bash start-termux.sh
+   ```
+3. **Buka Aplikasi Piufoto:** Buka APK Piufoto di tablet untuk mulai memotret. Web galeri online di `https://foto.berkisahkita.web.id` akan aktif melayani tamu secara otomatis!
+
+

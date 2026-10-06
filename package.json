@@ -3,7 +3,13 @@
   "version": "2.2.0",
   "description": "Piufoto - Realtime Google Drive OTG Uploader with Automatic Frame Templates",
   "scripts": {
-    "start": "node local-server.js"
+    "start": "node local-server.js",
+    "start:tunnel": "start-with-tunnel.bat",
+    "tunnel": "cloudflared tunnel run --token eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5NmM4YzYtYzRkNy00ZWU0LWE4YzEtYTQ4ODUzODM1ODRlIiwicyI6IllXTTBNMlF5WVRjdE1qSmxOUzAwWkRNekxXRXhZV1l0WXpBMU5UQXdaV1V6WmpWaiJ9",
+    "prepare:hybrid": "node prepare-hybrid.js",
+    "build:hybrid": "node prepare-hybrid.js && npx cap sync",
+    "android:open": "npx cap open android",
+    "android:sync": "npx cap sync"
   },
   "keywords": [
     "photobooth",
@@ -15,5 +21,12 @@
   "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/camera": "^8.2.5",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "@capacitor/filesystem": "^8.1.4"
   }
 }
