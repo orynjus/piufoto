@@ -160,6 +160,18 @@ TUNNEL_TOKEN="eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5Nm
 export TUNNEL_EDGE_IP_VERSION=4
 export GODEBUG=netdns=go
 
-# Jalankan Cloudflare Tunnel (tanpa exec agar node server di background tidak terbunuh)
-"$CLOUDFLARED_BIN" tunnel --protocol http2 --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
-cleanup
+# Jalankan Cloudflare Tunnel dengan auto-reconnect loop agar tidak mati saat sinyal seluler drop
+while true; do
+  # Pastikan server Node.js tetap aktif
+  if ! pgrep -f "local-server.js" >/dev/null 2>&1; then
+    echo "Menyalakan kembali server Node.js internal..."
+    nohup node local-server.js > server.log 2>&1 &
+    sleep 1
+  fi
+
+  "$CLOUDFLARED_BIN" tunnel --protocol auto --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
+
+  echo ""
+  echo "⚠ Koneksi internet / Cloudflare terputus sejenak. Menyambungkan kembali otomatis dalam 2 detik..."
+  sleep 2
+done
