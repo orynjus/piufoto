@@ -313,7 +313,6 @@ function startFujifilmWatcher() {
     const list = [
       path.join(homeDir, 'storage', 'dcim', 'Fujifilm'),
       path.join(homeDir, 'storage', 'dcim', '100_FUJI'),
-      path.join(homeDir, 'storage', 'dcim', 'Camera'),
       path.join(homeDir, 'storage', 'pictures', 'Fujifilm'),
       path.join(homeDir, 'storage', 'shared', 'DCIM', 'Fujifilm'),
       path.join(homeDir, 'storage', 'shared', 'DCIM', '100_FUJI'),
