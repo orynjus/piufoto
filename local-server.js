@@ -1212,7 +1212,7 @@ if (require.main === module) {
       console.error('Server error:', err);
     }
   });
-  server.listen(PORT, '0.0.0.0', () => {
+  server.listen(PORT, () => {
     const localIp = getLocalIp();
     console.log(`\n=============================================================`);
     console.log(`📸 PIUFOTO MULTI-SESSION GALLERY SERVER (ACTIVE)`);
