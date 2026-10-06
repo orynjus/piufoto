@@ -43,12 +43,12 @@ cat << 'EOF' > "$PREFIX/etc/hosts"
 ::1 localhost
 EOF
 
-# 2. Periksa dependensi Node.js, curl & ca-certificates
-echo "[2/5] Memeriksa paket Termux (nodejs, curl, ca-certificates)..."
-if ! command -v node >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
-  echo "Memasang paket penting (nodejs, curl, ca-certificates)..."
+# 2. Periksa dependensi Node.js, curl, ca-certificates & proot
+echo "[2/5] Memeriksa paket Termux (nodejs, curl, ca-certificates, proot)..."
+if ! command -v node >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1 || ! command -v termux-chroot >/dev/null 2>&1; then
+  echo "Memasang paket penting (nodejs, curl, ca-certificates, proot)..."
   pkg update -y || true
-  pkg install -y nodejs curl ca-certificates
+  pkg install -y nodejs curl ca-certificates proot
 fi
 
 # 3. Pastikan Cloudflared yang dipakai adalah versi resmi Termux (didukung penuh Android)
@@ -156,9 +156,9 @@ trap cleanup SIGINT SIGTERM
 
 TUNNEL_TOKEN="eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5NmM4YzYtYzRkNy00ZWU0LWE4YzEtYTQ4ODUzODM1ODRlIiwicyI6IllXTTBNMlF5WVRjdE1qSmxOUzAwWkRNekxXRXhZV1l0WXpBMU5UQXdaV1V6WmpWaiJ9"
 
-# Set konfigurasi DNS & paksa IPv4 edge connection agar tidak crash di Android
+# Set konfigurasi edge IP IPv4
 export TUNNEL_EDGE_IP_VERSION=4
-export GODEBUG=netdns=go
+unset GODEBUG
 
 # Jalankan Cloudflare Tunnel dengan auto-reconnect loop agar tidak mati saat sinyal seluler drop
 while true; do
@@ -169,7 +169,12 @@ while true; do
     sleep 1
   fi
 
-  "$CLOUDFLARED_BIN" tunnel --protocol auto --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
+  # Gunakan termux-chroot jika ada agar /etc/hosts (127.0.0.1 localhost) terbaca sempurna oleh Go
+  if command -v termux-chroot >/dev/null 2>&1; then
+    termux-chroot "$CLOUDFLARED_BIN" tunnel --protocol auto --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
+  else
+    "$CLOUDFLARED_BIN" tunnel --protocol auto --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
+  fi
 
   echo ""
   echo "⚠ Koneksi internet / Cloudflare terputus sejenak. Menyambungkan kembali otomatis dalam 2 detik..."
