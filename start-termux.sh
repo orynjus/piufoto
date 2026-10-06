@@ -29,26 +29,20 @@ if [ ! -d "$HOME/storage/shared" ] && [ ! -d "/sdcard/Documents" ]; then
   fi
 fi
 
-# 1C. Pastikan konfigurasi DNS & Hosts Termux lengkap
-# (Mencegah error 'lookup v2 origin tunnel' / 'lookup localhost: no such host')
+# 1C. Hapus resolv.conf kustom agar Termux menggunakan DNS bawaan sistem Android (tidak timeout di jaringan seluler)
+rm -f "$PREFIX/etc/resolv.conf" 2>/dev/null || true
 mkdir -p "$PREFIX/etc"
-cat << 'EOF' > "$PREFIX/etc/resolv.conf"
-nameserver 1.1.1.1
-nameserver 8.8.8.8
-nameserver 1.0.0.1
-EOF
-
 cat << 'EOF' > "$PREFIX/etc/hosts"
 127.0.0.1 localhost
 ::1 localhost
 EOF
 
-# 2. Periksa dependensi Node.js, curl, ca-certificates & proot
-echo "[2/5] Memeriksa paket Termux (nodejs, curl, ca-certificates, proot)..."
-if ! command -v node >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1 || ! command -v termux-chroot >/dev/null 2>&1; then
-  echo "Memasang paket penting (nodejs, curl, ca-certificates, proot)..."
+# 2. Periksa dependensi Node.js, curl & ca-certificates
+echo "[2/5] Memeriksa paket Termux (nodejs, curl, ca-certificates)..."
+if ! command -v node >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
+  echo "Memasang paket penting (nodejs, curl, ca-certificates)..."
   pkg update -y || true
-  pkg install -y nodejs curl ca-certificates proot
+  pkg install -y nodejs curl ca-certificates
 fi
 
 # 3. Pastikan Cloudflared yang dipakai adalah versi resmi Termux (didukung penuh Android)
@@ -169,12 +163,7 @@ while true; do
     sleep 1
   fi
 
-  # Gunakan termux-chroot jika ada agar /etc/hosts (127.0.0.1 localhost) terbaca sempurna oleh Go
-  if command -v termux-chroot >/dev/null 2>&1; then
-    termux-chroot "$CLOUDFLARED_BIN" tunnel --protocol auto --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
-  else
-    "$CLOUDFLARED_BIN" tunnel --protocol auto --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
-  fi
+  "$CLOUDFLARED_BIN" tunnel --protocol auto --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
 
   echo ""
   echo "⚠ Koneksi internet / Cloudflare terputus sejenak. Menyambungkan kembali otomatis dalam 2 detik..."
