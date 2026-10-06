@@ -62,9 +62,38 @@ function detectPublicBaseUrl() {
 }
 
 const PORT = process.env.PORT || 3000;
-const BASE_GALLERY_DIR = process.env.VERCEL
-  ? path.join(os.tmpdir(), 'gallery-photos')
-  : path.join(__dirname, 'gallery-photos');
+
+function resolveBaseGalleryDir() {
+  if (process.env.VERCEL) {
+    return path.join(os.tmpdir(), 'gallery-photos');
+  }
+
+  // Jika berjalan di Android / Termux, utamakan folder Documents/Piufoto
+  // tempat aplikasi Piufoto APK menyimpan foto-foto berbingkai
+  const homeDir = os.homedir();
+  const androidCandidates = [
+    '/sdcard/Documents/Piufoto',
+    '/storage/emulated/0/Documents/Piufoto',
+    path.join(homeDir, 'storage', 'shared', 'Documents', 'Piufoto'),
+    path.join(homeDir, 'storage', 'documents', 'Piufoto')
+  ];
+
+  for (const candidate of androidCandidates) {
+    try {
+      const parentDir = path.dirname(candidate);
+      if (fs.existsSync(parentDir)) {
+        if (!fs.existsSync(candidate)) {
+          fs.mkdirSync(candidate, { recursive: true });
+        }
+        return candidate;
+      }
+    } catch (e) {}
+  }
+
+  return path.join(__dirname, 'gallery-photos');
+}
+
+const BASE_GALLERY_DIR = resolveBaseGalleryDir();
 
 // Ensure base gallery directory exists (safely handle read-only environments like Vercel)
 const DEFAULT_FOLDER = 'Sesi_01';
@@ -76,6 +105,27 @@ try {
   }
   if (!fs.existsSync(defaultFolderPath)) {
     fs.mkdirSync(defaultFolderPath, { recursive: true });
+  }
+
+  // Otomatis migrasi foto lama jika ada dari folder __dirname/gallery-photos ke Documents/Piufoto
+  const oldDir = path.join(__dirname, 'gallery-photos');
+  if (oldDir !== BASE_GALLERY_DIR && fs.existsSync(oldDir)) {
+    const oldSessions = fs.readdirSync(oldDir, { withFileTypes: true });
+    for (const session of oldSessions) {
+      if (session.isDirectory()) {
+        const srcSub = path.join(oldDir, session.name);
+        const dstSub = path.join(BASE_GALLERY_DIR, session.name);
+        if (!fs.existsSync(dstSub)) fs.mkdirSync(dstSub, { recursive: true });
+        const oldFiles = fs.readdirSync(srcSub);
+        for (const f of oldFiles) {
+          const sFile = path.join(srcSub, f);
+          const dFile = path.join(dstSub, f);
+          if (!fs.existsSync(dFile) && fs.statSync(sFile).isFile()) {
+            fs.copyFileSync(sFile, dFile);
+          }
+        }
+      }
+    }
   }
 } catch (err) {
   console.warn("Could not create local gallery dir:", err.message);

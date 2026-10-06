@@ -20,6 +20,15 @@ if command -v termux-wake-lock >/dev/null 2>&1; then
   termux-wake-lock
 fi
 
+# 1B. Periksa izin akses penyimpanan folder Documents Android
+if [ ! -d "$HOME/storage/shared" ] && [ ! -d "/sdcard/Documents" ]; then
+  echo "Mengaktifkan izin akses folder Dokumen Android..."
+  if command -v termux-setup-storage >/dev/null 2>&1; then
+    termux-setup-storage
+    sleep 2
+  fi
+fi
+
 # 2. Periksa dependensi Node.js, curl & ca-certificates
 echo "[2/5] Memeriksa paket Node.js & sertifikat..."
 if ! command -v node >/dev/null 2>&1 || ! command -v curl >/dev/null 2>&1; then
