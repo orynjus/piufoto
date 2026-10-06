@@ -163,7 +163,7 @@ while true; do
     sleep 1
   fi
 
-  "$CLOUDFLARED_BIN" tunnel --protocol auto --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
+  "$CLOUDFLARED_BIN" tunnel --protocol http2 --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
 
   echo ""
   echo "⚠ Koneksi internet / Cloudflare terputus sejenak. Menyambungkan kembali otomatis dalam 2 detik..."
