@@ -120,6 +120,7 @@ done
 
 if [ $SERVER_READY -eq 1 ]; then
   echo "✓ Server Node.js siap dan merespons normal di port 3000!"
+  echo "  Respon server: $(curl -s http://127.0.0.1:3000/api/info)"
 else
   echo "⚠ Peringatan: Server belum merespons dalam 15 detik. Isi log server:"
   cat server.log
