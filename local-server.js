@@ -95,37 +95,10 @@ function resolveBaseGalleryDir() {
 
 const BASE_GALLERY_DIR = resolveBaseGalleryDir();
 
-// Ensure base gallery directory exists (safely handle read-only environments like Vercel)
-const DEFAULT_FOLDER = 'Sesi_01';
-const defaultFolderPath = path.join(BASE_GALLERY_DIR, DEFAULT_FOLDER);
-
+// Base gallery directory (reads from /sdcard/Documents/Piufoto on Android)
 try {
   if (!fs.existsSync(BASE_GALLERY_DIR)) {
     fs.mkdirSync(BASE_GALLERY_DIR, { recursive: true });
-  }
-  if (!fs.existsSync(defaultFolderPath)) {
-    fs.mkdirSync(defaultFolderPath, { recursive: true });
-  }
-
-  // Otomatis migrasi foto lama jika ada dari folder __dirname/gallery-photos ke Documents/Piufoto
-  const oldDir = path.join(__dirname, 'gallery-photos');
-  if (oldDir !== BASE_GALLERY_DIR && fs.existsSync(oldDir)) {
-    const oldSessions = fs.readdirSync(oldDir, { withFileTypes: true });
-    for (const session of oldSessions) {
-      if (session.isDirectory()) {
-        const srcSub = path.join(oldDir, session.name);
-        const dstSub = path.join(BASE_GALLERY_DIR, session.name);
-        if (!fs.existsSync(dstSub)) fs.mkdirSync(dstSub, { recursive: true });
-        const oldFiles = fs.readdirSync(srcSub);
-        for (const f of oldFiles) {
-          const sFile = path.join(srcSub, f);
-          const dFile = path.join(dstSub, f);
-          if (!fs.existsSync(dFile) && fs.statSync(sFile).isFile()) {
-            fs.copyFileSync(sFile, dFile);
-          }
-        }
-      }
-    }
   }
 } catch (err) {
   console.warn("Could not create local gallery dir:", err.message);
@@ -590,19 +563,8 @@ const requestHandler = (req, res) => {
         })
         .sort((a, b) => a.createdAt - b.createdAt);
 
-      // If all folders were deleted, recreate Sesi_01
-      if (folders.length === 0) {
-        fs.mkdirSync(defaultFolderPath, { recursive: true });
-        const accessToken = encryptSessionToken(DEFAULT_FOLDER);
-        folders = [{
-          name: DEFAULT_FOLDER,
-          displayName: 'Sesi 01',
-          photoCount: 0,
-          accessToken: accessToken,
-          clientUrl: `${activePublicBase}/gallery.html?access=${accessToken}`,
-          createdAt: Date.now(),
-          updatedAt: Date.now()
-        }];
+      if (!folders) {
+        folders = [];
       }
 
       const jsonStr = JSON.stringify({ folders });
@@ -1290,9 +1252,13 @@ if (require.main === module) {
       console.log(`  foto otomatis disinkronkan ke aplikasi Galeri HP Anda.`);
     }
 
-    // Aktifkan Auto-Watcher Kamera Fujifilm
-    startFujifilmWatcher();
-    console.log(`- 📡 Auto-Watcher Kamera: AKTIF! (Memantau DCIM/Fujifilm)`);
+    // Auto-Watcher kamera hanya aktif jika diatur secara eksplisit
+    if (process.env.ENABLE_FUJI_WATCHER === '1' || serverSettings.enableWatcher === true) {
+      startFujifilmWatcher();
+      console.log(`- 📡 Auto-Watcher Kamera: AKTIF! (Memantau DCIM/Fujifilm)`);
+    } else {
+      console.log(`- 📡 Auto-Watcher: NONAKTIF (Tidak ada penyalinan foto otomatis)`);
+    }
     console.log(`=============================================================\n`);
   });
 }

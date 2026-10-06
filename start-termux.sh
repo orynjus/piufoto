@@ -97,9 +97,13 @@ if ! curl -s --head --connect-timeout 4 https://1.1.1.1 >/dev/null 2>&1; then
 fi
 
 # 4. Hentikan proses lama jika ada yang masih berjalan di latar belakang
-echo "[4/5] Membersihkan sesi lama..."
+echo "[4/5] Membersihkan sesi lama & file sampel..."
 pkill -f "cloudflared" 2>/dev/null || true
 pkill -f "local-server.js" 2>/dev/null || true
+rm -f gallery-photos/Sesi_01/*.JPG 2>/dev/null || true
+rm -f gallery-photos/Sesi_01/*.jpg 2>/dev/null || true
+rm -f /sdcard/Documents/Piufoto/Sesi_01/NIKON_*.JPG 2>/dev/null || true
+rm -f /sdcard/Documents/Piufoto/Sesi_01/NIKON_*.jpg 2>/dev/null || true
 sleep 1
 
 # 5. Nyalakan server Node.js TERLEBIH DAHULU
