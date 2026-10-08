@@ -1322,6 +1322,51 @@
       border-color: var(--accent);
       transform: translateY(-2px);
     }
+
+    /* Native-like Edge Swipe to Back Indicator */
+    #swipe-back-indicator {
+      position: fixed;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      z-index: 99999;
+      opacity: 0;
+      transition: opacity 0.15s ease;
+      display: flex;
+      align-items: center;
+      padding-left: 12px;
+    }
+
+    #swipe-back-indicator.active {
+      opacity: 1;
+    }
+
+    .swipe-back-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid rgba(59, 130, 246, 0.45);
+      color: #93c5fd;
+      padding: 10px 18px;
+      border-radius: 9999px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6), 0 0 20px rgba(59, 130, 246, 0.25);
+      transform: translateX(-15px) scale(0.9);
+      transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+      will-change: transform;
+    }
+
+    .swipe-back-pill.ready {
+      border-color: #38bdf8;
+      background: rgba(14, 165, 233, 0.4);
+      color: #ffffff;
+      box-shadow: 0 10px 30px -3px rgba(14, 165, 233, 0.5), 0 0 25px rgba(14, 165, 233, 0.4);
+    }
   </style>
 </head>
 
@@ -1337,7 +1382,7 @@
         </svg>
       </div>
       <div class="brand-info">
-        <h1 id="gallery-folder-title" class="event-title-h1">The Wedding Gallery</h1>
+        <h1 id="gallery-folder-title" class="event-title-h1">My Moment</h1>
         <div class="studio-subtitle">
           <span id="gallery-photographer-name">BerkisahKita</span>
           <span>•</span>
@@ -1348,7 +1393,7 @@
 
     <div class="header-actions">
       <!-- Back to Camera / Studio Dashboard -->
-      <a href="index.html" class="theme-picker-btn" style="text-decoration: none; color: #93c5fd; background: rgba(37, 99, 235, 0.2); border-color: rgba(59, 130, 246, 0.4);" title="Kembali ke Dashboard Kamera" onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }">
+      <a href="index.html" class="theme-picker-btn" style="text-decoration: none; color: #93c5fd; background: rgba(37, 99, 235, 0.2); border-color: rgba(59, 130, 246, 0.4);" title="Kembali ke Dashboard Kamera" onclick="event.preventDefault(); window.goBackToCamera();">
         <span>📷</span>
         <span class="header-btn-text">Kamera</span>
       </a>
@@ -1356,7 +1401,7 @@
       <!-- Session Switcher Button in Header -->
       <button class="theme-picker-btn session-header-btn" onclick="openSessionModal()" title="Pilih / Ganti Sesi Foto">
         <span>📁</span>
-        <span id="header-active-session-name" style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Pilih Sesi</span>
+        <span id="header-active-session-name" style="max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">My Moment</span>
         <span style="font-size: 0.65rem; opacity: 0.7;">▾</span>
       </button>
 
@@ -1396,7 +1441,7 @@
   <!-- Hero Event Banner -->
   <section class="hero-banner">
     <span class="hero-tag" id="hero-theme-badge">🌸 Wedding Blossom</span>
-    <h2 id="banner-folder-name" class="hero-title">Sarah & Dimas</h2>
+    <h2 id="banner-folder-name" class="hero-title">My Moment</h2>
     <p class="hero-subtitle" id="banner-subtitle">
       Selamat menikmati momen bahagia ini! Ketuk foto untuk melihat dan unduh langsung ke ponsel Anda.
     </p>
@@ -1588,15 +1633,62 @@
        ======================================================== -->
     <script src="hybrid-bridge.js"></script>
     <script>
-      // URL Parameters
-      const urlParams = new URLSearchParams(window.location.search);
-      const accessParam = urlParams.get('access') || '';
-      let currentFolder = urlParams.get('folder') || '';
+      // Smart URL Parameters Extraction (preserves '&' and decoded characters)
+      function getUrlParamSmart(paramName) {
+        try {
+          const rawSearch = window.location.search;
+          if (!rawSearch) return '';
+          const urlParams = new URLSearchParams(rawSearch);
+          let val = urlParams.get(paramName) || '';
+
+          // If query string had an unencoded '&' inside this param
+          const match = rawSearch.match(new RegExp('[?&]' + paramName + '=([^#]*)', 'i'));
+          if (match) {
+            let rawVal = match[1];
+            const nextMatch = rawVal.match(/&(folder|access|theme|title|subtitle|v)=/i);
+            if (nextMatch) {
+              rawVal = rawVal.substring(0, nextMatch.index);
+            }
+            try {
+              val = decodeURIComponent(rawVal.replace(/\+/g, ' '));
+            } catch (e) {
+              val = rawVal.replace(/\+/g, ' ');
+            }
+          }
+          if (val) {
+            val = val.replace(/&amp;/gi, '&').trim();
+          }
+          return val;
+        } catch (e) {
+          return '';
+        }
+      }
+
+      function decodeHtmlEntities(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&amp;/gi, '&')
+          .replace(/&lt;/gi, '<')
+          .replace(/&gt;/gi, '>')
+          .replace(/&quot;/gi, '"')
+          .replace(/&#39;/gi, "'");
+      }
+
+      function isSameFolder(folderA, folderB) {
+        if (!folderA || !folderB) return true;
+        if (folderA === folderB) return true;
+        const normA = String(folderA).replace(/&amp;/gi, '&').replace(/%26/gi, '&').trim().toLowerCase().replace(/[\s_-]+/g, '');
+        const normB = String(folderB).replace(/&amp;/gi, '&').replace(/%26/gi, '&').trim().toLowerCase().replace(/[\s_-]+/g, '');
+        return normA === normB;
+      }
+
+      const accessParam = getUrlParamSmart('access') || '';
+      let currentFolder = getUrlParamSmart('folder') || 'My_Moment';
       let availableFolders = [];
       let lastFoldersFingerprint = '';
-      const paramTheme = urlParams.get('theme') || localStorage.getItem(`piufoto_theme_${currentFolder || 'default'}`) || 'wedding';
-      const paramTitle = urlParams.get('title') || '';
-      const paramSubtitle = urlParams.get('subtitle') || '';
+      const paramTheme = getUrlParamSmart('theme') || localStorage.getItem(`piufoto_theme_${currentFolder || 'default'}`) || 'wedding';
+      const paramTitle = getUrlParamSmart('title') || '';
+      const paramSubtitle = getUrlParamSmart('subtitle') || '';
 
       let allPhotos = [];
       let favoriteIds = JSON.parse(localStorage.getItem(`piufoto_fav_${currentFolder}`) || '[]');
@@ -1623,9 +1715,12 @@
         }
       }
 
-      function closeSessionModal() {
+      function closeSessionModal(shouldPopHistory = true) {
         const modal = document.getElementById('modal-session-picker');
         if (modal) modal.classList.remove('active');
+        if (shouldPopHistory && history.state && history.state.modal === 'session') {
+          try { history.back(); } catch (e) {}
+        }
       }
 
       function handleSessionOverlayClick(e) {
@@ -1656,7 +1751,11 @@
             lastFoldersFingerprint = fp;
 
             // Auto-select folder if none was specified in URL or if currentFolder is not in list
-            if (!currentFolder || !availableFolders.some(f => f.name === currentFolder)) {
+            const hasExplicitFolder = !!getUrlParamSmart('folder');
+            const matched = availableFolders.find(f => isSameFolder(f.name, currentFolder));
+            if (matched) {
+              currentFolder = matched.name;
+            } else if (!hasExplicitFolder) {
               const folderWithPhotos = availableFolders.find(f => f.photoCount > 0);
               currentFolder = folderWithPhotos ? folderWithPhotos.name : availableFolders[0].name;
 
@@ -1687,20 +1786,21 @@
 
         if (totalBadge) totalBadge.innerText = availableFolders.length;
 
-        const activeObj = availableFolders.find(f => f.name === currentFolder);
-        const activeDisplayName = activeObj ? activeObj.displayName : (currentFolder ? currentFolder.replace(/_/g, ' ') : 'Pilih Sesi');
+        const activeObj = availableFolders.find(f => isSameFolder(f.name, currentFolder));
+        const activeDisplayName = activeObj ? activeObj.displayName : (currentFolder ? currentFolder.replace(/_/g, ' ') : 'My Moment');
 
         if (headerSession) {
-          headerSession.innerText = activeDisplayName;
+          headerSession.innerText = decodeHtmlEntities(activeDisplayName);
         }
 
         // Render horizontal scrollable pills
         if (container) {
           container.innerHTML = availableFolders.map(folder => {
-            const isActive = folder.name === currentFolder;
+            const isActive = isSameFolder(folder.name, currentFolder);
             return `
               <button class="session-pill-btn ${isActive ? 'active' : ''}" 
-                      onclick="selectSession('${escapeJs(folder.name)}')">
+                      data-folder="${escapeHtml(folder.name)}"
+                      onclick="selectSession(this.dataset.folder)">
                 <span>📁 ${escapeHtml(folder.displayName)}</span>
                 <span class="session-pill-badge">${folder.photoCount}</span>
               </button>
@@ -1711,9 +1811,9 @@
         // Render modal list
         if (modalList) {
           modalList.innerHTML = availableFolders.map(folder => {
-            const isActive = folder.name === currentFolder;
+            const isActive = isSameFolder(folder.name, currentFolder);
             return `
-              <div class="session-item-row ${isActive ? 'active' : ''}" onclick="selectSession('${escapeJs(folder.name)}')">
+              <div class="session-item-row ${isActive ? 'active' : ''}" data-folder="${escapeHtml(folder.name)}" onclick="selectSession(this.dataset.folder)">
                 <div style="display: flex; align-items: center; gap: 10px;">
                   <span style="font-size: 1.25rem;">📁</span>
                   <div>
@@ -1748,10 +1848,12 @@
         window.history.replaceState(null, '', newUrl.toString());
 
         // Update active folder title in page
-        const activeObj = availableFolders.find(f => f.name === currentFolder);
+        const activeObj = availableFolders.find(f => isSameFolder(f.name, currentFolder));
         const displayName = activeObj ? activeObj.displayName : currentFolder.replace(/_/g, ' ');
-        document.getElementById('gallery-folder-title').innerText = displayName;
-        document.getElementById('banner-folder-name').innerText = displayName;
+        const cleanTitle = decodeHtmlEntities(displayName);
+        document.getElementById('gallery-folder-title').innerText = cleanTitle;
+        document.getElementById('banner-folder-name').innerText = cleanTitle;
+        document.title = `${cleanTitle} - Galeri Foto`;
 
         // Reset photos & load favorites for this folder
         favoriteIds = JSON.parse(localStorage.getItem(`piufoto_fav_${currentFolder}`) || '[]');
@@ -1819,9 +1921,12 @@
         }
       }
 
-      function closeThemeModal() {
+      function closeThemeModal(shouldPopHistory = true) {
         const modal = document.getElementById('modal-theme-picker');
         if (modal) modal.classList.remove('active');
+        if (shouldPopHistory && history.state && history.state.modal === 'theme') {
+          try { history.back(); } catch (e) {}
+        }
       }
 
       function selectTheme(themeName) {
@@ -1832,13 +1937,14 @@
       function initPageMeta() {
         applyTheme(paramTheme);
 
-        const folderClean = currentFolder ? currentFolder.replace(/_/g, ' ') : 'Galeri Foto';
-        const title = paramTitle || folderClean;
+        const folderClean = currentFolder ? decodeHtmlEntities(currentFolder.replace(/_/g, ' ')) : 'My Moment';
+        const title = decodeHtmlEntities(paramTitle) || folderClean;
         document.getElementById('gallery-folder-title').innerText = title;
         document.getElementById('banner-folder-name').innerText = title;
+        document.title = `${title} - Galeri Foto`;
 
         if (paramSubtitle) {
-          document.getElementById('banner-subtitle').innerText = paramSubtitle;
+          document.getElementById('banner-subtitle').innerText = decodeHtmlEntities(paramSubtitle);
         }
 
         // Check if Google Drive link cached
@@ -1888,8 +1994,10 @@
             document.getElementById('total-count-tab').innerText = `(${allPhotos.length})`;
 
             if (!paramTitle && data.displayName) {
-              document.getElementById('gallery-folder-title').innerText = data.displayName;
-              document.getElementById('banner-folder-name').innerText = data.displayName;
+              const cleanDisp = decodeHtmlEntities(data.displayName);
+              document.getElementById('gallery-folder-title').innerText = cleanDisp;
+              document.getElementById('banner-folder-name').innerText = cleanDisp;
+              document.title = `${cleanDisp} - Galeri Foto`;
             }
 
             const currentFingerprint = allPhotos.map(p => `${p.id || p.name}_${p.timestamp || ''}`).join('|') + `__fav:${favoriteIds.join(',')}_filter:${currentFilter}_sort:${currentSortOrder}`;
@@ -2295,7 +2403,55 @@
         }
       }
 
-      // Proteksi Usap/Tombol Back Ponsel: Kembali ke galeri tanpa menutup tab/halaman
+      // ========================================================
+      // GESTURE & BACK NAVIGATION HANDLER
+      // Menangani gerakan usap / tombol back ponsel agar TIDAK menutup aplikasi,
+      // melainkan hanya kembali (tutup modal/lightbox, atau kembali ke Dashboard Kamera)
+      // ========================================================
+      let isNavigatingBack = false;
+      window.goBackToCamera = function() {
+        if (isNavigatingBack) return;
+        isNavigatingBack = true;
+
+        // Efek animasi transisi halus saat kembali ke kamera
+        document.body.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+        document.body.style.opacity = '0';
+        document.body.style.transform = 'translateX(24px)';
+
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 120);
+      };
+
+      window.handleAppBackGesture = function() {
+        // 1. Jika Lightbox foto aktif, tutup foto dan kembali ke galeri
+        const lightboxModal = document.getElementById('lightbox');
+        if (lightboxModal && lightboxModal.classList.contains('active')) {
+          LightboxState.hasPushedHistory = false;
+          closeLightbox(false);
+          return true; // Hanya kembali ke tampilan galeri, tidak keluar aplikasi
+        }
+
+        // 2. Jika Modal Sesi aktif, tutup modal sesi
+        const sessionModal = document.getElementById('modal-session-picker');
+        if (sessionModal && sessionModal.classList.contains('active')) {
+          closeSessionModal(false);
+          return true;
+        }
+
+        // 3. Jika Modal Tema aktif, tutup modal tema
+        const themeModal = document.getElementById('modal-theme-picker');
+        if (themeModal && themeModal.classList.contains('active')) {
+          closeThemeModal(false);
+          return true;
+        }
+
+        // 4. Jika di galeri utama tanpa modal, KEMBALI KE KAMERA (tidak menutup aplikasi!)
+        window.goBackToCamera();
+        return true;
+      };
+
+      // Proteksi Usap/Tombol Back Ponsel: Kembali ke galeri tanpa menutup tab/halaman/aplikasi
       window.addEventListener('popstate', (e) => {
         const modal = document.getElementById('lightbox');
         if (modal && modal.classList.contains('active')) {
@@ -2305,14 +2461,18 @@
         }
         const sessionModal = document.getElementById('modal-session-picker');
         if (sessionModal && sessionModal.classList.contains('active')) {
-          closeSessionModal();
+          closeSessionModal(false);
           return;
         }
         const themeModal = document.getElementById('modal-theme-picker');
         if (themeModal && themeModal.classList.contains('active')) {
-          closeThemeModal();
+          closeThemeModal(false);
           return;
         }
+
+        // Jika tidak ada modal terbuka dan user mengusap back pada browser / webview,
+        // kembali ke dashboard kamera daripada menutup aplikasi / tab
+        window.goBackToCamera();
       });
 
       function rotateLightboxPhoto() {
@@ -2646,6 +2806,117 @@
         });
       }
 
+      // ========================================================
+      // IN-PAGE EDGE SWIPE GESTURE ENGINE
+      // Mendeteksi gerakan usap dari tepi kiri layar pada halaman galeri
+      // untuk kembali ke Dashboard Kamera dengan visual feedback
+      // ========================================================
+      function initGallerySwipeGesture() {
+        const indicator = document.createElement('div');
+        indicator.id = 'swipe-back-indicator';
+        indicator.innerHTML = `
+          <div class="swipe-back-pill">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 12H5"></path>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span>Kembali ke Kamera</span>
+          </div>
+        `;
+        document.body.appendChild(indicator);
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let isSwipingBack = false;
+        let isDecided = false;
+        const SWIPE_EDGE_MAX = 70; // Sentuhan mulai di tepi kiri (0 - 70px)
+        const TRIGGER_DISTANCE = 75; // Jarak usapan untuk memicu kembali
+
+        window.addEventListener('touchstart', (e) => {
+          // Abaikan jika lightbox foto sedang terbuka (lightbox memiliki gestur sendiri)
+          const lightbox = document.getElementById('lightbox');
+          if (lightbox && lightbox.classList.contains('active')) return;
+
+          // Abaikan jika menyentuh navigasi sesi horizontal
+          if (e.target && e.target.closest('#session-pills-container')) return;
+
+          if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            touchStartX = touch.clientX;
+            touchStartY = touch.clientY;
+            isDecided = false;
+            isSwipingBack = false;
+
+            if (touchStartX <= SWIPE_EDGE_MAX) {
+              isSwipingBack = true;
+            }
+          }
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+          if (!isSwipingBack || e.touches.length !== 1) return;
+
+          const touch = e.touches[0];
+          const deltaX = touch.clientX - touchStartX;
+          const deltaY = touch.clientY - touchStartY;
+
+          if (!isDecided) {
+            if (Math.hypot(deltaX, deltaY) > 8) {
+              // Jika gerakan vertikal lebih dominan atau geser ke kiri, batalkan
+              if (Math.abs(deltaY) > Math.abs(deltaX) * 0.8 || deltaX < 0) {
+                isSwipingBack = false;
+                indicator.classList.remove('active');
+                return;
+              }
+              isDecided = true;
+            } else {
+              return;
+            }
+          }
+
+          if (deltaX > 10) {
+            const progress = Math.min(deltaX / TRIGGER_DISTANCE, 1.3);
+            indicator.classList.add('active');
+            indicator.style.opacity = String(Math.min(progress, 1));
+            const pill = indicator.querySelector('.swipe-back-pill');
+            if (pill) {
+              const translateX = Math.min(deltaX * 0.5, 45);
+              pill.style.transform = `translateX(${translateX}px) scale(${0.88 + progress * 0.12})`;
+              if (deltaX >= TRIGGER_DISTANCE) {
+                pill.classList.add('ready');
+              } else {
+                pill.classList.remove('ready');
+              }
+            }
+          }
+        }, { passive: true });
+
+        const handleTouchEnd = (e) => {
+          if (!isSwipingBack) return;
+          isSwipingBack = false;
+          indicator.classList.remove('active');
+
+          const pill = indicator.querySelector('.swipe-back-pill');
+          if (pill) {
+            pill.style.transform = '';
+            pill.classList.remove('ready');
+          }
+
+          if (isDecided) {
+            const touch = e.changedTouches ? e.changedTouches[0] : null;
+            if (touch) {
+              const deltaX = touch.clientX - touchStartX;
+              if (deltaX >= TRIGGER_DISTANCE) {
+                window.handleAppBackGesture();
+              }
+            }
+          }
+        };
+
+        window.addEventListener('touchend', handleTouchEnd, { passive: true });
+        window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
+      }
+
       // Keyboard navigation
       window.addEventListener('keydown', (e) => {
         if (!document.getElementById('lightbox').classList.contains('active')) return;
@@ -2662,7 +2933,8 @@
 
       function escapeHtml(str) {
         if (!str) return '';
-        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        const clean = String(str).replace(/&amp;/gi, '&');
+        return clean.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
       }
 
       function formatTime(timestamp) {
@@ -2723,7 +2995,7 @@
             try {
               const data = JSON.parse(e.data);
               if (data.type === 'new_photo' || data.type === 'photo_deleted' || data.type === 'photos_updated') {
-                if (!data.folder || data.folder === currentFolder) {
+                if (!data.folder || isSameFolder(data.folder, currentFolder)) {
                   fetchPhotos();
                 }
               } else if (data.type === 'folders_updated') {
@@ -2770,8 +3042,18 @@
       });
 
       document.addEventListener('DOMContentLoaded', async () => {
+        // Pastikan ada entri history agar gestur usap kembali pada browser / WebView
+        // selalu tertangkap oleh event popstate dan tidak langsung keluar dari aplikasi
+        try {
+          if (!history.state || !history.state.galleryRoot) {
+            history.replaceState({ galleryRoot: true }, '');
+            history.pushState({ galleryActive: true }, '');
+          }
+        } catch (e) {}
+
         initPageMeta();
         initLightboxGestures();
+        initGallerySwipeGesture();
         updateSortButtonUI();
         initRealtimeSSE();
         

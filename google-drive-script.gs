@@ -102,10 +102,10 @@ function doPost(e) {
     var data = JSON.parse(e.postData.contents);
     var action = data.action || "upload";
     
-    // Nama sesi/folder (contoh: Sesi 01, Sesi 1, Wedding Sarah Dimas, dsb.)
+    // Nama sesi/folder (contoh: My Moment, Wedding Sarah & Dimas, dsb.)
     var sessionFolderName = (data.folderName && String(data.folderName).trim() !== "") 
       ? String(data.folderName).trim() 
-      : "Sesi_01";
+      : "My_Moment";
       
     // Dapatkan folder Google Drive dengan NAMA SESI SAJA
     var targetFolder = getOrCreateSessionFolder(sessionFolderName, data);
@@ -152,7 +152,7 @@ function doPost(e) {
 function doGet(e) {
   try {
     var params = (e && e.parameter) ? e.parameter : {};
-    var sessionFolderName = params.folder || params.folderName || "Sesi_01";
+    var sessionFolderName = params.folder || params.folderName || "My_Moment";
     var targetFolder = getOrCreateSessionFolder(sessionFolderName, params);
     
     try {

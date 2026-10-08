@@ -94,7 +94,7 @@ function resolveBaseGalleryDir() {
 }
 
 const BASE_GALLERY_DIR = resolveBaseGalleryDir();
-const DEFAULT_FOLDER = 'Sesi_01';
+const DEFAULT_FOLDER = 'My_Moment';
 
 // Base gallery directory (reads from /sdcard/Documents/Piufoto on Android)
 try {
@@ -135,7 +135,68 @@ function getLocalIp() {
 }
 
 function sanitizeFolderName(name) {
-  return (name || 'Sesi_01').replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_') || 'Sesi_01';
+  if (!name) return 'My_Moment';
+  let clean = String(name)
+    .replace(/&amp;/gi, '&')
+    .replace(/%26/gi, '&')
+    .replace(/[^a-zA-Z0-9_\-\s&]/g, '')
+    .trim()
+    .replace(/\s+/g, '_');
+  return clean || 'My_Moment';
+}
+
+function resolveSessionDir(folder) {
+  const safe = sanitizeFolderName(folder);
+  const directPath = path.join(BASE_GALLERY_DIR, safe);
+  if (fs.existsSync(directPath)) return directPath;
+
+  const withSpaces = safe.replace(/_/g, ' ');
+  const spacePath = path.join(BASE_GALLERY_DIR, withSpaces);
+  if (fs.existsSync(spacePath)) return spacePath;
+
+  try {
+    const items = fs.readdirSync(BASE_GALLERY_DIR, { withFileTypes: true });
+    const normSafe = safe.replace(/&amp;/gi, '&').toLowerCase().replace(/[\s_-]+/g, '');
+    for (const item of items) {
+      if (item.isDirectory()) {
+        const itemNorm = item.name.replace(/&amp;/gi, '&').toLowerCase().replace(/[\s_-]+/g, '');
+        if (itemNorm === normSafe) {
+          return path.join(BASE_GALLERY_DIR, item.name);
+        }
+      }
+    }
+  } catch (e) {}
+
+  return directPath;
+}
+
+function extractFolderQuery(reqUrl, searchParams) {
+  let folder = searchParams.get('folder');
+  try {
+    if (reqUrl && reqUrl.includes('folder=')) {
+      const match = reqUrl.match(/[?&]folder=([^#]*)/i);
+      if (match) {
+        let rawVal = match[1];
+        const nextParamMatch = rawVal.match(/&(access|theme|file|view|v)=/i);
+        if (nextParamMatch) {
+          rawVal = rawVal.substring(0, nextParamMatch.index);
+        }
+        let decoded = '';
+        try {
+          decoded = decodeURIComponent(rawVal.replace(/\+/g, ' '));
+        } catch (e) {
+          decoded = rawVal.replace(/\+/g, ' ');
+        }
+        if (decoded && decoded.trim()) {
+          folder = decoded.trim();
+        }
+      }
+    }
+  } catch (e) {}
+  if (folder) {
+    folder = folder.replace(/&amp;/gi, '&');
+  }
+  return folder;
 }
 
 function getAndroidGalleryDir(folder = '') {
@@ -564,8 +625,20 @@ const requestHandler = (req, res) => {
         })
         .sort((a, b) => a.createdAt - b.createdAt);
 
-      if (!folders) {
-        folders = [];
+      if (!folders || folders.length === 0) {
+        const defaultPath = path.join(BASE_GALLERY_DIR, DEFAULT_FOLDER);
+        if (!fs.existsSync(defaultPath)) {
+          try { fs.mkdirSync(defaultPath, { recursive: true }); } catch (e) {}
+        }
+        folders = [{
+          name: DEFAULT_FOLDER,
+          displayName: 'My Moment',
+          photoCount: 0,
+          accessToken: encryptSessionToken(DEFAULT_FOLDER),
+          clientUrl: `${activePublicBase}/gallery.html?access=${encryptSessionToken(DEFAULT_FOLDER)}`,
+          createdAt: Date.now(),
+          updatedAt: Date.now()
+        }];
       }
 
       const jsonStr = JSON.stringify({ folders });
@@ -770,9 +843,9 @@ const requestHandler = (req, res) => {
     return;
   }
 
-  // API 6: Get Photos inside a specific folder (?folder=Sesi_01 or ?access=...)
+  // API 6: Get Photos inside a specific folder (?folder=My_Moment or ?access=...)
   if (pathname === '/api/photos' && req.method === 'GET') {
-    let folder = searchParams.get('folder');
+    let folder = extractFolderQuery(req.url, searchParams);
     const access = searchParams.get('access');
     let themeFromToken = '';
 
@@ -792,17 +865,22 @@ const requestHandler = (req, res) => {
       folder = DEFAULT_FOLDER;
     }
 
-    const safeFolder = sanitizeFolderName(folder);
-    const targetFolder = path.join(BASE_GALLERY_DIR, safeFolder);
+    const targetFolder = resolveSessionDir(folder);
+    const actualFolderName = path.basename(targetFolder);
 
     if (!fs.existsSync(targetFolder)) {
-      res.writeHead(404, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Folder tidak ditemukan', photos: [] }));
-      return;
+      if (actualFolderName === DEFAULT_FOLDER || actualFolderName === 'sesi01' || actualFolderName === 'Sesi_01') {
+        try { fs.mkdirSync(targetFolder, { recursive: true }); } catch (e) {}
+      }
+      if (!fs.existsSync(targetFolder)) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Folder tidak ditemukan', photos: [] }));
+        return;
+      }
     }
 
     const now = Date.now();
-    const cacheKey = `${safeFolder}_${themeFromToken}`;
+    const cacheKey = `${actualFolderName}_${themeFromToken}`;
     const cached = photosCacheMap.get(cacheKey);
 
     // In-Memory Cache: Jika request berulang dalam 2.5 detik, sajikan dari memori tanpa baca disk
@@ -830,8 +908,8 @@ const requestHandler = (req, res) => {
           return {
             id: file,
             name: file,
-            folder: safeFolder,
-            url: `/gallery-photos/${encodeURIComponent(safeFolder)}/${encodeURIComponent(file)}`,
+            folder: actualFolderName,
+            url: `/gallery-photos/${encodeURIComponent(actualFolderName)}/${encodeURIComponent(file)}`,
             timestamp: stats.mtimeMs,
             size: stats.size
           };
@@ -841,12 +919,12 @@ const requestHandler = (req, res) => {
             || ((a.timestamp || 0) - (b.timestamp || 0));
         });
 
-      const accessToken = encryptSessionToken(safeFolder, themeFromToken);
+      const accessToken = encryptSessionToken(actualFolderName, themeFromToken);
       const activePublicBase = lastPublicBaseUrl || detectPublicBaseUrl() || baseUrl;
 
       const payload = {
-        folder: safeFolder,
-        displayName: safeFolder.replace(/_/g, ' '),
+        folder: actualFolderName,
+        displayName: actualFolderName.replace(/_/g, ' '),
         theme: themeFromToken,
         accessToken: accessToken,
         clientUrl: `${activePublicBase}/gallery.html?access=${accessToken}`,
@@ -855,7 +933,7 @@ const requestHandler = (req, res) => {
 
       const jsonStr = JSON.stringify(payload);
       const latestTimestamp = photoFiles.length > 0 ? photoFiles[photoFiles.length - 1].timestamp : 0;
-      const etag = `W/"p-${safeFolder}-${photoFiles.length}-${latestTimestamp}"`;
+      const etag = `W/"p-${actualFolderName}-${photoFiles.length}-${latestTimestamp}"`;
 
       photosCacheMap.set(cacheKey, {
         jsonString: jsonStr,
@@ -1056,7 +1134,7 @@ const requestHandler = (req, res) => {
           headers: { 'Content-Type': 'text/plain' },
           body: JSON.stringify({
             action: 'create_folder',
-            folderName: folderName || 'Sesi 01',
+            folderName: folderName || 'My Moment',
             rootFolderName: rootFolderName || '',
             parentFolderId: parentFolderId || ''
           }),

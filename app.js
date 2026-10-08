@@ -8,8 +8,8 @@
 
 const AppState = {
   folders: [],
-  activeFolder: 'Sesi_01',
-  activeFolderDisplayName: 'Sesi 01',
+  activeFolder: 'My_Moment',
+  activeFolderDisplayName: 'My Moment',
   activeFolderDriveUrl: '',
   publicBaseUrl: localStorage.getItem('piufoto_public_base_url') || 'https://foto.berkisahkita.web.id',
   qrTarget: localStorage.getItem('piufoto_qr_target') || 'all', // 'all' | 'gallery' | 'gdrive'
@@ -117,6 +117,12 @@ async function fetchFolders() {
   }
 }
 
+function escapeHtml(str) {
+  if (!str) return '';
+  const clean = String(str).replace(/&amp;/gi, '&');
+  return clean.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function renderFolderTabs() {
   const container = document.getElementById('folders-scroll-list');
   container.innerHTML = '';
@@ -126,7 +132,7 @@ function renderFolderTabs() {
     const isActive = folder.name === AppState.activeFolder;
     tab.className = `folder-tab-item ${isActive ? 'active' : ''}`;
     tab.innerHTML = `
-      <span>📁 ${folder.displayName}</span>
+      <span>📁 ${escapeHtml(folder.displayName)}</span>
       <span class="folder-tab-badge">${folder.photoCount}</span>
     `;
     tab.onclick = () => switchActiveFolder(folder.name);
@@ -223,7 +229,7 @@ function updateActiveFolderQR() {
     }
     if (folderBadge) folderBadge.innerText = AppState.activeFolderDisplayName;
     if (labelBtn) labelBtn.innerText = `📱 Buka Galeri ${AppState.activeFolderDisplayName} ↗`;
-    if (descText) descText.innerHTML = `Tamu scan QR ini dengan kuota internet untuk membuka <strong>${AppState.activeFolderDisplayName}</strong> secara online.`;
+    if (descText) descText.innerHTML = `Tamu scan QR ini dengan kuota internet untuk membuka <strong>${escapeHtml(AppState.activeFolderDisplayName)}</strong> secara online.`;
   } else {
     const cachedUrl = localStorage.getItem(`gdrive_url_${AppState.activeFolder}`) || AppState.activeFolderDriveUrl;
     targetUrl = cachedUrl || `${originUrl}/gallery.html?folder=${encodeURIComponent(AppState.activeFolder)}`;
@@ -302,7 +308,7 @@ async function fetchFolderUrlFromGoogleDrive(folderName) {
 async function createNewFolder() {
   const defaultNextIndex = AppState.folders.length + 1;
   const folderInput = prompt(
-    "Masukkan Nama Folder / Sesi Google Drive Baru:\n(contoh: Sesi 02, Prewedding Budi, Wedding Sarah & Dimas)", 
+    "Masukkan Nama Folder / Sesi Google Drive Baru:\n(contoh: My Moment, Prewedding Budi, Wedding Sarah & Dimas)", 
     `Sesi ${defaultNextIndex < 10 ? '0' + defaultNextIndex : defaultNextIndex}`
   );
   if (!folderInput || !folderInput.trim()) return;
@@ -1267,7 +1273,7 @@ async function uploadPhotoWithFrameToGoogleDrive(file) {
 
     // Instant optimistic render (0ms delay) so photo appears on screen IMMEDIATELY
     const newPhotoItem = {
-      id: (AppState.activeFolder || 'Sesi_01') + '/' + file.name,
+      id: (AppState.activeFolder || 'My_Moment') + '/' + file.name,
       name: file.name,
       url: framedBase64,
       size: Math.round(framedBase64.length * 0.75),
@@ -1786,7 +1792,7 @@ async function testWebhookConnection() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         webhookUrl: webhookInput,
-        folderName: AppState.activeFolderDisplayName || AppState.activeFolder || 'Sesi 01',
+        folderName: AppState.activeFolderDisplayName || AppState.activeFolder || 'My Moment',
         rootFolderName: rootInput || '',
         parentFolderId: parentInput || ''
       })
@@ -1898,7 +1904,7 @@ async function testPublicDomainConnection() {
 
 async function syncSessionPhotosToOnline() {
   const targetUrl = AppState.publicBaseUrl || localStorage.getItem('piufoto_public_base_url') || 'https://foto.berkisahkita.web.id';
-  const folderName = AppState.activeFolder || 'Sesi_01';
+  const folderName = AppState.activeFolder || 'My_Moment';
   const displayName = AppState.activeFolderDisplayName || folderName;
 
   if (!AppState.photos || AppState.photos.length === 0) {

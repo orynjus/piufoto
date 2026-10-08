@@ -163,6 +163,7 @@ while true; do
     sleep 1
   fi
 
+  # Gunakan HTTP2 karena provider seluler memblokir UDP 7844 (QUIC)
   "$CLOUDFLARED_BIN" tunnel --protocol http2 --edge-ip-version 4 --no-autoupdate run --token "$TUNNEL_TOKEN"
 
   echo ""

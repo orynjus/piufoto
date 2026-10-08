@@ -21,7 +21,12 @@
   // Folder Normalization & Flexible Matching Helpers
   function normalizeFolderName(str) {
     if (!str) return '';
-    return String(str).trim().toLowerCase().replace(/[\s_-]+/g, '');
+    return String(str)
+      .replace(/&amp;/gi, '&')
+      .replace(/%26/gi, '&')
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, '');
   }
 
   function matchesFolder(folderA, folderB) {
@@ -63,12 +68,12 @@
     const tx = db.transaction(['folders'], 'readwrite');
     const store = tx.objectStore('folders');
     return new Promise((resolve) => {
-      const getReq = store.get('Sesi_01');
+      const getReq = store.get('My_Moment');
       getReq.onsuccess = () => {
         if (!getReq.result) {
           store.put({
-            name: 'Sesi_01',
-            displayName: 'Sesi 01',
+            name: 'My_Moment',
+            displayName: 'My Moment',
             createdAt: Date.now(),
             count: 0
           });
@@ -94,7 +99,7 @@
           const allPhotos = photoReq.result || [];
           const counts = {};
           allPhotos.forEach(p => {
-            const nf = normalizeFolderName(p.folder) || 'sesi01';
+            const nf = normalizeFolderName(p.folder) || 'mymoment';
             counts[nf] = (counts[nf] || 0) + 1;
           });
 
@@ -102,7 +107,7 @@
           const mapped = folders.map(f => {
             const nf = normalizeFolderName(f.name);
             knownNorms.add(nf);
-            const cnt = counts[nf] || (allPhotos.length > 0 && (nf === 'sesi01' || folders.length === 1) ? allPhotos.length : 0);
+            const cnt = counts[nf] || (allPhotos.length > 0 && (nf === 'mymoment' || nf === 'sesi01' || folders.length === 1) ? allPhotos.length : 0);
             return {
               name: f.name,
               displayName: f.displayName || f.name.replace(/_/g, ' '),
@@ -117,7 +122,7 @@
             const nf = normalizeFolderName(p.folder);
             if (nf && !knownNorms.has(nf)) {
               knownNorms.add(nf);
-              const folderName = p.folder || 'Sesi_01';
+              const folderName = p.folder || 'My_Moment';
               mapped.push({
                 name: folderName,
                 displayName: folderName.replace(/_/g, ' '),
@@ -130,8 +135,8 @@
 
           if (mapped.length === 0) {
             mapped.push({
-              name: 'Sesi_01',
-              displayName: 'Sesi 01',
+              name: 'My_Moment',
+              displayName: 'My Moment',
               photoCount: allPhotos.length,
               count: allPhotos.length,
               createdAt: Date.now()
@@ -151,7 +156,8 @@
     return new Promise((resolve, reject) => {
       const tx = db.transaction(['folders'], 'readwrite');
       const store = tx.objectStore('folders');
-      const safeName = name.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
+      const cleanName = String(name || 'My_Moment').replace(/&amp;/gi, '&').replace(/%26/gi, '&');
+      const safeName = cleanName.replace(/[^a-zA-Z0-9_\-\s&]/g, '').trim().replace(/\s+/g, '_') || 'My_Moment';
       const item = {
         name: safeName,
         displayName: safeName.replace(/_/g, ' '),
@@ -166,7 +172,8 @@
 
   async function dbRenameFolder(oldName, newName) {
     const db = await openDatabase();
-    const safeNew = newName.replace(/[^a-zA-Z0-9_\-\s]/g, '').trim().replace(/\s+/g, '_');
+    const cleanNew = String(newName || 'My_Moment').replace(/&amp;/gi, '&').replace(/%26/gi, '&');
+    const safeNew = cleanNew.replace(/[^a-zA-Z0-9_\-\s&]/g, '').trim().replace(/\s+/g, '_') || 'My_Moment';
     return new Promise((resolve) => {
       const tx = db.transaction(['folders', 'photos'], 'readwrite');
       const fStore = tx.objectStore('folders');
@@ -236,14 +243,14 @@
         // and folder is default session or empty, return all photos so user never sees empty gallery!
         if (filtered.length === 0 && all.length > 0) {
           const normReq = normalizeFolderName(folder);
-          if (!normReq || normReq === 'sesi01' || normReq === 'sesi1') {
+          if (!normReq || normReq === 'mymoment' || normReq === 'sesi01' || normReq === 'sesi1') {
             filtered = all;
           }
         }
 
         const mapped = filtered
           .map(p => ({
-            id: p.id || ((p.folder || 'Sesi_01') + '/' + p.name),
+            id: p.id || ((p.folder || 'My_Moment') + '/' + p.name),
             name: p.name,
             url: p.dataUrl,
             size: p.size || 0,
@@ -434,13 +441,30 @@
     }
 
     if (pathname === '/api/photos') {
-      const folderParam = params.get('folder');
+      let folderParam = params.get('folder');
+      try {
+        if (url && url.includes('folder=')) {
+          const match = url.match(/[?&]folder=([^#]*)/i);
+          if (match) {
+            let rawVal = match[1];
+            const nextMatch = rawVal.match(/&(access|theme|file|view|v)=/i);
+            if (nextMatch) rawVal = rawVal.substring(0, nextMatch.index);
+            try {
+              folderParam = decodeURIComponent(rawVal.replace(/\+/g, ' '));
+            } catch (e) {
+              folderParam = rawVal.replace(/\+/g, ' ');
+            }
+          }
+        }
+      } catch (e) {}
+      if (folderParam) folderParam = folderParam.replace(/&amp;/gi, '&').trim();
+
       const folder = (folderParam !== null && folderParam !== undefined && folderParam !== '') 
         ? folderParam 
-        : (localStorage.getItem('piufoto_active_folder') || 'Sesi_01');
+        : (localStorage.getItem('piufoto_active_folder') || 'My_Moment');
       if (method === 'GET') {
         const photos = await dbGetPhotos(folder);
-        const resolvedFolder = folder || (photos.length > 0 && photos[0].folder ? photos[0].folder : 'Sesi_01');
+        const resolvedFolder = folder || (photos.length > 0 && photos[0].folder ? photos[0].folder : 'My_Moment');
         return jsonResponse({
           ok: true,
           status: 'success',
@@ -460,7 +484,7 @@
       if (method === 'POST') {
         let body = {};
         try { body = JSON.parse(init.body); } catch (e) {}
-        const folder = body.folder || 'Sesi_01';
+        const folder = body.folder || 'My_Moment';
         const filename = body.filename || `foto_${Date.now()}.jpg`;
         const dataUrl = body.image || '';
         await dbSavePhoto(folder, filename, dataUrl);
@@ -518,7 +542,7 @@
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
               action: 'create_folder',
-              folderName: body.folderName || 'Sesi 01',
+              folderName: body.folderName || 'My Moment',
               rootFolderName: body.rootFolderName || '',
               parentFolderId: body.parentFolderId || ''
             })

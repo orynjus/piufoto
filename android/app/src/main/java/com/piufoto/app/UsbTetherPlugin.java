@@ -117,6 +117,9 @@ public class UsbTetherPlugin extends Plugin {
         }
         receiverRegistered = true;
 
+        // Pastikan KeepAliveService berjalan untuk mempertahankan WakeLock & polling saat layar mati
+        KeepAliveService.startKeepAliveService(context);
+
         // Start continuous background auto-scan (every 1.5 seconds)
         startContinuousPolling();
     }
