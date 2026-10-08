@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node local-server.js",
     "start:tunnel": "start-with-tunnel.bat",
-    "tunnel": "cloudflared tunnel run --token eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5NmM4YzYtYzRkNy00ZWU0LWE4YzEtYTQ4ODUzODM1ODRlIiwicyI6IllXTTBNMlF5WVRjdE1qSmxOUzAwWkRNekxXRXhZV1l0WXpBMU5UQXdaV1V6WmpWaiJ9",
+    "tunnel": "cloudflared tunnel run --token eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5NmM4YzYtYzRkNy00ZWU0LWE4YzEtYTQ4ODUzODM1ODRlIiwicyI6Ik1HSXlPV05qWVRBdFl6Z3paUzAwWVdJMUxUbGhORFF0TlRKaU5UbGhNbVF3Tm1Nd1kyUTFNVGhsTkdRdE5ESTVNUzAwWkRFMkxUZzVZekl0TWpVMlpqWmlOVE5tTVRRMSJ9",
     "prepare:hybrid": "node prepare-hybrid.js",
     "build:hybrid": "node prepare-hybrid.js && npx cap sync",
     "android:open": "npx cap open android",

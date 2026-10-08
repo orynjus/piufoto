@@ -8,8 +8,7 @@ echo =============================================================
 echo.
 
 echo [1/3] Memeriksa Tunnel Cloudflare...
-powershell -NoProfile -Command "$s = Get-Service Cloudflared -ErrorAction SilentlyContinue; if ($s -and $s.Status -ne 'Running') { Start-Service Cloudflared -ErrorAction SilentlyContinue }"
-powershell -NoProfile -Command "$p = Get-Process cloudflared -ErrorAction SilentlyContinue; if (-not $p) { Write-Host 'Menjalankan Cloudflared Tunnel di latar belakang...'; Start-Process -NoNewWindow cloudflared -ArgumentList 'tunnel run --token eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5NmM4YzYtYzRkNy00ZWU0LWE4YzEtYTQ4ODUzODM1ODRlIiwicyI6IllXTTBNMlF5WVRjdE1qSmxOUzAwWkRNekxXRXhZV1l0WXpBMU5UQXdaV1V6WmpWaiJ9' -ErrorAction SilentlyContinue }"
+powershell -NoProfile -Command "Stop-Process -Name cloudflared -Force -ErrorAction SilentlyContinue; $cf = (Get-Command cloudflared -ErrorAction SilentlyContinue).Source; if (-not $cf) { $cf = 'C:\Program Files (x86)\cloudflared\cloudflared.exe' }; Write-Host 'Menjalankan Cloudflared Tunnel dengan token baru di latar belakang...'; Start-Process -NoNewWindow -FilePath $cf -ArgumentList 'tunnel run --token eyJhIjoiZmM0OTZkNmY4N2EzNWM2MGMzOTJiZjk5ODQ0NDFmZmEiLCJ0IjoiMDM5NmM4YzYtYzRkNy00ZWU0LWE4YzEtYTQ4ODUzODM1ODRlIiwicyI6Ik1HSXlPV05qWVRBdFl6Z3paUzAwWVdJMUxUbGhORFF0TlRKaU5UbGhNbVF3Tm1Nd1kyUTFNVGhsTkdRdE5ESTVNUzAwWkRFMkxUZzVZekl0TWpVMlpqWmlOVE5tTVRRMSJ9' -ErrorAction SilentlyContinue"
 
 echo [2/3] Memastikan Port 3000 siap...
 powershell -NoProfile -Command "(Get-NetTCPConnection -LocalPort 3000 -State Listen -ErrorAction SilentlyContinue) | ForEach-Object { Write-Host ('Menutup proses server lama di port 3000 (PID: ' + $_.OwningProcess + ')...'); Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"
